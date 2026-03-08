@@ -16,12 +16,13 @@
 # under the License.
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from airflow.models.dagrun import DagRun
+from typing import Any
 
 
-def detect_dagrun_anomaly(dag_run: DagRun) -> tuple[bool, str, str]:
-    """MVP detector: mark all DagRuns anomalous. Returns tuple: (is_anomalous, detector_name, reason)."""
+def detect_task_instance_anomaly(task_instance: Any) -> tuple[bool, str, str]:
+    """
+    MVP detector: mark all completed tasks anomalous.
+
+    Returns tuple: (is_anomalous, detector_name, reason).
+    """
     return True, "always_true", "temporary MVP detector"
