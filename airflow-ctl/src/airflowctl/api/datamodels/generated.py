@@ -326,6 +326,21 @@ class DAGTagCollectionResponse(BaseModel):
     total_entries: Annotated[int, Field(title="Total Entries")]
 
 
+class DagAnomalyResponse(BaseModel):
+    """
+    DAG Anomaly serializer for responses.
+    """
+
+    id: Annotated[int, Field(title="Id")]
+    dag_id: Annotated[str, Field(title="Dag Id")]
+    run_id: Annotated[str, Field(title="Run Id")]
+    is_anomalous: Annotated[bool, Field(title="Is Anomalous")]
+    detector_name: Annotated[str, Field(title="Detector Name")]
+    reason: Annotated[str | None, Field(title="Reason")] = None
+    created_at: Annotated[datetime, Field(title="Created At")]
+    updated_at: Annotated[datetime, Field(title="Updated At")]
+
+
 class DagProcessorInfoResponse(BaseModel):
     """
     DagProcessor info serializer for responses.
@@ -1524,6 +1539,15 @@ class DAGWarningResponse(BaseModel):
     message: Annotated[str, Field(title="Message")]
     timestamp: Annotated[datetime, Field(title="Timestamp")]
     dag_display_name: Annotated[str, Field(title="Dag Display Name")]
+
+
+class DagAnomalyCollectionResponse(BaseModel):
+    """
+    DAG Anomaly Collection serializer for responses.
+    """
+
+    dag_anomalies: Annotated[list[DagAnomalyResponse], Field(title="Dag Anomalies")]
+    total_entries: Annotated[int, Field(title="Total Entries")]
 
 
 class DagStatsResponse(BaseModel):
