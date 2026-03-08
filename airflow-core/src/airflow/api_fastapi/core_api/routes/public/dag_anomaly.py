@@ -62,7 +62,7 @@ def get_dag_anomalies(
     )
 
     # Execute and return results wrapped in the collection schema
-    anomalies = session.scalars(map_select).all()
+    anomalies = list(session.scalars(map_select).all())
 
     return DagAnomalyCollectionResponse(
         dag_anomalies=anomalies,
