@@ -36,10 +36,11 @@ import { RecentRuns } from "./RecentRuns";
 import { Schedule } from "./Schedule";
 
 type Props = {
+  readonly anomalousRunIds?: Set<string>;
   readonly dag: DAGWithLatestDagRunsResponse;
 };
 
-export const DagCard = ({ dag }: Props) => {
+export const DagCard = ({ anomalousRunIds = new Set(), dag }: Props) => {
   const { t: translate } = useTranslation(["common", "dag"]);
   const [latestRun] = dag.latest_dag_runs;
 
@@ -86,6 +87,7 @@ export const DagCard = ({ dag }: Props) => {
               <RouterLink to={`/dags/${latestRun.dag_id}/runs/${latestRun.run_id}`}>
                 <DagRunInfo
                   endDate={latestRun.end_date}
+                  isAnomalous={anomalousRunIds.has(latestRun.run_id)}
                   logicalDate={latestRun.logical_date}
                   runAfter={latestRun.run_after}
                   startDate={latestRun.start_date}

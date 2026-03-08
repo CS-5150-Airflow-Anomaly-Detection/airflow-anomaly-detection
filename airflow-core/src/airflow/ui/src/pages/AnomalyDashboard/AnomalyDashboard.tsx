@@ -61,7 +61,7 @@ export const AnomalyDashboard = () => {
           <Heading size="2xl">Task Performance Anomalies</Heading>
         </Flex>
 
-        <Text color="fg.muted" size="sm">
+        <Text color="fg.muted" fontSize="sm">
           Detect tasks that ran significantly faster or slower than their
           historical baseline. Data will appear here once the anomaly
           detection backend is connected.
@@ -76,7 +76,7 @@ export const AnomalyDashboard = () => {
             px={4}
             py={3}
           >
-            <Text color="fg.muted" size="xs">
+            <Text color="fg.muted" fontSize="xs">
               Anomalies (last 24h)
             </Text>
             <Heading size="lg">{stats.anomaliesLast24h}</Heading>
@@ -89,7 +89,7 @@ export const AnomalyDashboard = () => {
             px={4}
             py={3}
           >
-            <Text color="fg.muted" size="xs">
+            <Text color="fg.muted" fontSize="xs">
               Tasks monitored
             </Text>
             <Heading size="lg">{stats.tasksMonitored}</Heading>
@@ -102,7 +102,7 @@ export const AnomalyDashboard = () => {
             px={4}
             py={3}
           >
-            <Text color="fg.muted" size="xs">
+            <Text color="fg.muted" fontSize="xs">
               Detection algorithm
             </Text>
             <Text fontWeight="medium">{stats.algorithmsEnabled}</Text>

@@ -26,6 +26,7 @@ from airflow.api_fastapi.core_api.routes.public.auth import auth_router
 from airflow.api_fastapi.core_api.routes.public.backfills import backfills_router
 from airflow.api_fastapi.core_api.routes.public.config import config_router
 from airflow.api_fastapi.core_api.routes.public.connections import connections_router
+from airflow.api_fastapi.core_api.routes.public.dag_anomaly import dag_anomaly_router
 from airflow.api_fastapi.core_api.routes.public.dag_parsing import dag_parsing_router
 from airflow.api_fastapi.core_api.routes.public.dag_run import dag_run_router
 from airflow.api_fastapi.core_api.routes.public.dag_sources import dag_sources_router
@@ -84,6 +85,8 @@ authenticated_router.include_router(dag_tags_router)
 authenticated_router.include_router(dag_versions_router)
 authenticated_router.include_router(task_instances_hitl_router)
 
+# Custom Routers
+authenticated_router.include_router(dag_anomaly_router)
 
 # Include authenticated router in public router
 public_router.include_router(authenticated_router)

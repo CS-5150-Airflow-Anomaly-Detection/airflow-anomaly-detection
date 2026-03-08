@@ -3131,6 +3131,76 @@ export const $DAGWarningResponse = {
     description: 'DAG Warning serializer for responses.'
 } as const;
 
+export const $DagAnomalyCollectionResponse = {
+    properties: {
+        dag_anomalies: {
+            items: {
+                '$ref': '#/components/schemas/DagAnomalyResponse'
+            },
+            type: 'array',
+            title: 'Dag Anomalies'
+        },
+        total_entries: {
+            type: 'integer',
+            title: 'Total Entries'
+        }
+    },
+    type: 'object',
+    required: ['dag_anomalies', 'total_entries'],
+    title: 'DagAnomalyCollectionResponse',
+    description: 'DAG Anomaly Collection serializer for responses.'
+} as const;
+
+export const $DagAnomalyResponse = {
+    properties: {
+        id: {
+            type: 'integer',
+            title: 'Id'
+        },
+        dag_id: {
+            type: 'string',
+            title: 'Dag Id'
+        },
+        run_id: {
+            type: 'string',
+            title: 'Run Id'
+        },
+        is_anomalous: {
+            type: 'boolean',
+            title: 'Is Anomalous'
+        },
+        detector_name: {
+            type: 'string',
+            title: 'Detector Name'
+        },
+        reason: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reason'
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Created At'
+        },
+        updated_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updated At'
+        }
+    },
+    type: 'object',
+    required: ['id', 'dag_id', 'run_id', 'is_anomalous', 'detector_name', 'reason', 'created_at', 'updated_at'],
+    title: 'DagAnomalyResponse',
+    description: 'DAG Anomaly serializer for responses.'
+} as const;
+
 export const $DagProcessorInfoResponse = {
     properties: {
         status: {

@@ -29,6 +29,7 @@ import { GridTI } from "./GridTI";
 import type { GridTask } from "./utils";
 
 type Props = {
+  readonly isAnomalous?: boolean;
   readonly nodes: Array<GridTask>;
   readonly onCellClick?: () => void;
   readonly run: GridRunsResponse;
@@ -37,7 +38,7 @@ type Props = {
 
 const ROW_HEIGHT = 20;
 
-export const TaskInstancesColumn = ({ nodes, onCellClick, run, virtualItems }: Props) => {
+export const TaskInstancesColumn = ({ isAnomalous, nodes, onCellClick, run, virtualItems }: Props) => {
   const { dagId = "", runId } = useParams();
   const { data: gridTISummaries } = useGridTiSummaries({ dagId, runId: run.run_id, state: run.state });
   const { hoveredRunId, setHoveredRunId } = useHover();
@@ -101,6 +102,7 @@ export const TaskInstancesColumn = ({ nodes, onCellClick, run, virtualItems }: P
             <GridTI
               dagId={dagId}
               instance={taskInstance}
+              isAnomalous={isAnomalous}
               isGroup={node.isGroup}
               isMapped={node.is_mapped}
               label={node.label}

@@ -30,6 +30,7 @@ import { buildTaskInstanceUrl } from "src/utils/links";
 type Props = {
   readonly dagId: string;
   readonly instance: LightGridTaskInstanceSummary;
+  readonly isAnomalous?: boolean;
   readonly isGroup?: boolean;
   readonly isMapped?: boolean | null;
   readonly label: string;
@@ -38,7 +39,7 @@ type Props = {
   readonly taskId: string;
 };
 
-export const GridTI = ({ dagId, instance, isGroup, isMapped, onClick, runId, taskId }: Props) => {
+export const GridTI = ({ dagId, instance, isAnomalous, isGroup, isMapped, onClick, runId, taskId }: Props) => {
   const { hoveredTaskId, setHoveredTaskId } = useHover();
   const { groupId: selectedGroupId, taskId: selectedTaskId } = useParams();
   const { t: translate } = useTranslation();
@@ -104,6 +105,12 @@ export const GridTI = ({ dagId, instance, isGroup, isMapped, onClick, runId, tas
                 {translate("endDate")}: <Time datetime={instance.max_end_date} />
               </>
             )}
+            {isAnomalous && (
+              <>
+                <br />
+                {translate("anomalyDetected", "Performance anomaly detected")}
+              </>
+            )}
           </>
         }
       >
@@ -116,21 +123,33 @@ export const GridTI = ({ dagId, instance, isGroup, isMapped, onClick, runId, tas
             search: redirectionSearch,
           }}
         >
-          <Badge
+          <Flex
             alignItems="center"
-            borderRadius={4}
-            colorPalette={instance.state ?? "none"}
-            data-testid="task-state-badge"
-            display="flex"
-            height="14px"
+            borderRadius="full"
+            borderWidth={isAnomalous ? 2 : 0}
+            borderColor="red.500"
+            boxSizing="border-box"
+            height={isAnomalous ? "18px" : "14px"}
             justifyContent="center"
-            minH={0}
-            p={0}
-            variant="solid"
-            width="14px"
+            position="relative"
+            width={isAnomalous ? "18px" : "14px"}
           >
-            <StateIcon size={10} state={instance.state} />
-          </Badge>
+            <Badge
+              alignItems="center"
+              borderRadius={4}
+              colorPalette={instance.state ?? "none"}
+              data-testid="task-state-badge"
+              display="flex"
+              height="14px"
+              justifyContent="center"
+              minH={0}
+              p={0}
+              variant="solid"
+              width="14px"
+            >
+              <StateIcon size={10} state={instance.state} />
+            </Badge>
+          </Flex>
         </Link>
       </BasicTooltip>
     </Flex>

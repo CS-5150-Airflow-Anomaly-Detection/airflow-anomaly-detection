@@ -21,6 +21,7 @@ import {
   Box,
   Flex,
   Heading,
+  Skeleton,
   Table,
   Text,
   VStack,
@@ -28,21 +29,53 @@ import {
 import { FiAlertTriangle } from "react-icons/fi";
 import { useParams } from "react-router-dom";
 
-// Placeholder type (replace with API types when backend is ready)
-type AnomalyRecord = {
-  taskId: string;
-  runId: string;
-  detectedAt: string;
-  durationSeconds: number;
-  expectedRange: string;
-  type: "slow" | "fast";
-};
-
-const PLACEHOLDER_ANOMALIES: AnomalyRecord[] = [];
+import {
+  useDagAnomalyServiceGetDagAnomalies,
+  useTaskServiceGetTasks,
+} from "openapi/queries";
+import Time from "src/components/Time";
+import { useOpenGroups } from "src/context/openGroups";
+import { useGridStructure } from "src/queries/useGridStructure.ts";
+import { flattenNodes } from "src/layouts/Details/Grid/utils";
 
 export const Anomalies = () => {
   const { dagId = "" } = useParams();
-  const anomalies = PLACEHOLDER_ANOMALIES;
+
+  const { data: anomalyData, isLoading: isLoadingAnomalies, error } = useDagAnomalyServiceGetDagAnomalies({
+    dagId: dagId || undefined,
+    limit: 100,
+    offset: 0,
+  });
+
+  const { data: tasksData, isLoading: isLoadingTasks } = useTaskServiceGetTasks(
+    { dagId: dagId || "" },
+    undefined,
+    { enabled: !!dagId },
+  );
+
+  const { openGroupIds } = useOpenGroups();
+  const { data: dagStructure } = useGridStructure({ limit: 1 });
+  const { flatNodes } = flattenNodes(dagStructure, openGroupIds);
+  const gridOrderIndex = new Map(flatNodes.map((node, i) => [node.id, i]));
+
+  const allAnomalies = anomalyData?.dag_anomalies ?? [];
+  const anomalies = dagId ? allAnomalies.filter((a) => a.dag_id === dagId) : [];
+  const anomaliesByTime = [...anomalies].sort(
+    (a, b) =>
+      new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime(),
+  );
+  const firstAnomaly = anomaliesByTime[0] ?? null;
+  const latestAnomaly = anomaliesByTime[anomaliesByTime.length - 1] ?? null;
+  const totalEntries = anomalies.length;
+  const tasksRaw = tasksData?.tasks ?? [];
+  const tasks = [...tasksRaw].sort((a, b) => {
+    const idA = a.task_id ?? a.task_display_name ?? "";
+    const idB = b.task_id ?? b.task_display_name ?? "";
+    return (gridOrderIndex.get(idA) ?? 999) - (gridOrderIndex.get(idB) ?? 999);
+  });
+  const isLoading = isLoadingAnomalies || isLoadingTasks;
+
+  const titleText = "Task performance anomalies";
 
   return (
     <Box overflow="auto" px={{ base: 2, md: 4 }}>
@@ -51,60 +84,91 @@ export const Anomalies = () => {
           <Box color="orange.500">
             <FiAlertTriangle size={24} />
           </Box>
-          <Heading size="lg">Task performance anomalies</Heading>
+          <Heading size="lg">{titleText}</Heading>
         </Flex>
 
         <Text color="fg.muted" fontSize="sm">
-          Tasks in this DAG that ran significantly faster or slower than their historical 
-          baselines are listed below. 
-          Use this to spot performance regressions or unexpected speedups.
+          Tasks in this DAG that ran significantly faster or slower than their
+          historical baselines are listed below. Use this to spot performance
+          regressions or unexpected speedups.
         </Text>
 
         <Box>
           <Heading mb={3} size="sm">
-            Recent anomalies
+            Per-task anomaly status
           </Heading>
-          <Table.Root size="sm" striped>
-            <Table.Header bg="chakra-body-bg" position="sticky" top={0} zIndex={1}>
-              <Table.Row>
-                <Table.ColumnHeader>Task</Table.ColumnHeader>
-                <Table.ColumnHeader>Run</Table.ColumnHeader>
-                <Table.ColumnHeader>Detected</Table.ColumnHeader>
-                <Table.ColumnHeader>Duration</Table.ColumnHeader>
-                <Table.ColumnHeader>Expected range</Table.ColumnHeader>
-                <Table.ColumnHeader>Type</Table.ColumnHeader>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {anomalies.length === 0 ? (
+
+          {Boolean(error) && (
+            <Text color="fg.error" mb={3}>
+              Failed to load anomalies. Please try again.
+            </Text>
+          )}
+
+          {isLoading ? (
+            <Skeleton height="200px" borderRadius="md" />
+          ) : (
+            <Table.Root size="sm" striped>
+              <Table.Header bg="chakra-body-bg" position="sticky" top={0} zIndex={1}>
                 <Table.Row>
-                  <Table.Cell colSpan={6} py={8} textAlign="center">
-                    <Text color="fg.muted">
-                      No performance anomalies in recent runs.
-                    </Text>
-                  </Table.Cell>
+                  <Table.ColumnHeader>Task</Table.ColumnHeader>
+                  <Table.ColumnHeader>First detected</Table.ColumnHeader>
+                  <Table.ColumnHeader>Last updated</Table.ColumnHeader>
+                  <Table.ColumnHeader>Detector</Table.ColumnHeader>
+                  <Table.ColumnHeader>Reason</Table.ColumnHeader>
+                  <Table.ColumnHeader>Status</Table.ColumnHeader>
                 </Table.Row>
-              ) : (
-                anomalies.map((a) => (
-                  <Table.Row key={`${a.taskId}-${a.runId}`}>
-                    <Table.Cell>{a.taskId}</Table.Cell>
-                    <Table.Cell>{a.runId}</Table.Cell>
-                    <Table.Cell>{a.detectedAt}</Table.Cell>
-                    <Table.Cell>{a.durationSeconds}s</Table.Cell>
-                    <Table.Cell>{a.expectedRange}</Table.Cell>
-                    <Table.Cell>
-                      <Badge
-                        colorPalette={a.type === "slow" ? "orange" : "blue"}
-                        size="sm"
-                      >
-                        {a.type}
-                      </Badge>
+              </Table.Header>
+              <Table.Body>
+                {tasks.length === 0 ? (
+                  <Table.Row>
+                    <Table.Cell colSpan={6} py={8} textAlign="center">
+                      <Text color="fg.muted">
+                        No tasks in this DAG.
+                      </Text>
                     </Table.Cell>
                   </Table.Row>
-                ))
-              )}
-            </Table.Body>
-          </Table.Root>
+                ) : (
+                  tasks.map((task) => (
+                    <Table.Row key={task.task_id ?? task.task_display_name ?? ""}>
+                      <Table.Cell>
+                        {task.task_display_name ?? task.task_id ?? "—"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        {firstAnomaly ? (
+                          <Time datetime={firstAnomaly.created_at} />
+                        ) : (
+                          "—"
+                        )}
+                      </Table.Cell>
+                      <Table.Cell>
+                        {latestAnomaly ? (
+                          <Time datetime={latestAnomaly.updated_at} />
+                        ) : (
+                          "—"
+                        )}
+                      </Table.Cell>
+                      <Table.Cell>
+                        {latestAnomaly?.detector_name ?? "—"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        {latestAnomaly?.reason ?? "—"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Badge
+                          colorPalette={
+                            totalEntries > 0 ? "orange" : "gray"
+                          }
+                          size="sm"
+                        >
+                          {totalEntries > 0 ? "Anomalous" : "Normal"}
+                        </Badge>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))
+                )}
+              </Table.Body>
+            </Table.Root>
+          )}
         </Box>
       </VStack>
     </Box>

@@ -26,6 +26,7 @@ import { FiChevronsRight } from "react-icons/fi";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import type { DagRunState, DagRunType, GridRunsResponse } from "openapi/requests";
+import { useDagAnomalyServiceGetDagAnomalies } from "openapi/queries";
 import { useOpenGroups } from "src/context/openGroups";
 import { NavigationModes, useNavigation } from "src/hooks/navigation";
 import { useGridRuns } from "src/queries/useGridRuns.ts";
@@ -96,6 +97,18 @@ export const Grid = ({ dagRunState, limit, runType, showGantt, triggeringUser }:
     runType,
     triggeringUser,
   });
+
+  const { data: anomalyData } = useDagAnomalyServiceGetDagAnomalies({
+    dagId: dagId || undefined,
+    limit: 500,
+    offset: 0,
+  });
+  const allAnomalies = anomalyData?.dag_anomalies ?? [];
+  const anomalousRunIds = new Set(
+    (dagId ? allAnomalies.filter((a) => a.dag_id === dagId && a.is_anomalous) : []).map(
+      (a) => a.run_id,
+    ),
+  );
 
   // calculate dag run bar heights relative to max
   const max = Math.max.apply(
@@ -199,6 +212,7 @@ export const Grid = ({ dagRunState, limit, runType, showGantt, triggeringUser }:
             {gridRuns?.map((dr: GridRunsResponse) => (
               <TaskInstancesColumn
                 key={dr.run_id}
+                isAnomalous={anomalousRunIds.has(dr.run_id)}
                 nodes={flatNodes}
                 onCellClick={handleCellClick}
                 run={dr}
