@@ -35,6 +35,52 @@ def record_task_instance_anomaly(
     reason: str | None,
 ) -> None:
     """Insert or update the TaskInstanceAnomaly row for the given TaskInstance."""
+    # #region agent log
+    import json
+    import os
+    import time
+
+    try:
+        from airflow import settings
+
+        db_url = str(settings.get_engine().url) if settings.get_engine() else "unknown"
+        tables = []
+        try:
+            from sqlalchemy import inspect
+
+            tables = inspect(session.get_bind()).get_table_names()
+        except Exception:
+            pass
+        migration_exists = False
+        try:
+            versions_dir = os.path.join(os.path.dirname(__file__), "..", "..", "migrations", "versions")
+            abs_versions = os.path.abspath(versions_dir)
+            if os.path.isdir(abs_versions):
+                migration_exists = any("task_instance_anomaly" in f for f in os.listdir(abs_versions))
+        except Exception:
+            pass
+        with open("/home/alexjoos/airflow-anomaly-detection/.cursor/debug-e7dad0.log", "a") as f:
+            f.write(
+                json.dumps(
+                    {
+                        "sessionId": "e7dad0",
+                        "hypothesisId": "H1",
+                        "location": "task_recorder.py:record_task_instance_anomaly",
+                        "message": "DB and migration state",
+                        "data": {
+                            "db_url": db_url[:80],
+                            "has_task_instance_anomaly_table": "task_instance_anomaly" in tables,
+                            "table_count": len(tables),
+                            "migration_file_exists": migration_exists,
+                        },
+                        "timestamp": int(time.time() * 1000),
+                    }
+                )
+                + "\n"
+            )
+    except Exception:
+        pass
+    # #endregion
     dag_id = task_instance.dag_id
     run_id = task_instance.run_id
     task_id = task_instance.task_id
