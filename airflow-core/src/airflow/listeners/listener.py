@@ -17,11 +17,11 @@
 # under the License.
 from __future__ import annotations
 
+import importlib
 from functools import cache
 
 from airflow._shared.listeners.listener import ListenerManager
 from airflow._shared.listeners.spec import lifecycle, taskinstance
-from airflow.anomaly_detection import listener as anomaly_listener
 from airflow.listeners.spec import asset, dagrun, importerrors
 from airflow.plugins_manager import integrate_listener_plugins
 
@@ -45,6 +45,7 @@ def get_listener_manager() -> ListenerManager:
     _listener_manager.add_hookspecs(taskinstance)
     _listener_manager.add_hookspecs(asset)
     _listener_manager.add_hookspecs(importerrors)
+    anomaly_listener = importlib.import_module("airflow.anomaly_detection.listener")
     _listener_manager.add_listener(anomaly_listener)
 
     integrate_listener_plugins(_listener_manager)

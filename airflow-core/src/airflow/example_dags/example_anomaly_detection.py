@@ -26,7 +26,7 @@ import datetime
 import time
 from pathlib import Path
 
-from airflow.models.anomalydetector import AnomalyDetector, ThresholdAnomaly
+from airflow.anomaly_detection.anomalydetector import AnomalyDetector, ThresholdAnomaly
 from airflow.sdk import DAG, Param, TriggerRule, task
 
 # [START params_trigger]

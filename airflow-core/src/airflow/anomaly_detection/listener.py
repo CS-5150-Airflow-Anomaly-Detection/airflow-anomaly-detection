@@ -22,9 +22,9 @@ from typing import Any
 import structlog
 from sqlalchemy import or_, select
 
+from airflow.anomaly_detection.anomalydetector import AnomalyDetector
 from airflow.anomaly_detection.task_recorder import record_task_instance_anomaly
 from airflow.listeners import hookimpl
-from airflow.models.anomalydetector import AnomalyDetector
 from airflow.models.taskinstance import TaskInstance
 from airflow.utils.session import create_session
 from airflow.utils.state import TaskInstanceState
