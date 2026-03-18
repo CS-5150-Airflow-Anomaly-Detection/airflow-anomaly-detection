@@ -28,7 +28,7 @@ from airflow.utils.sqlalchemy import UtcDateTime
 
 
 class TaskInstanceAnomaly(Base):
-    """ORM model storing anomaly status for a TaskInstance."""
+    """ORM model storing unique anomaly columns for a TaskInstance."""
 
     __tablename__ = "task_instance_anomaly"
 
