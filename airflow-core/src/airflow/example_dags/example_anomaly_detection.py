@@ -58,7 +58,7 @@ with DAG(
             return []
         return params["times"]
 
-    anomaly_detector = AnomalyDetector(min_runs=2, max_runs=4, algorithm=ThresholdAnomaly(max_runtime=3))
+    anomaly_detector = AnomalyDetector(min_runs=2, max_runs=4, algorithm=ThresholdAnomaly(max_runtime=1))
 
     @task(task_id="run_for_time", task_display_name="Run for time", on_success_callback=anomaly_detector)
     def run_for_time(n_seconds: float) -> float:

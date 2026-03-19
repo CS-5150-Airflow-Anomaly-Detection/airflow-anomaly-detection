@@ -25,7 +25,6 @@ from sqlalchemy import or_, select
 from airflow.anomaly_detection.anomalydetector import AnomalyDetector
 from airflow.anomaly_detection.task_recorder import record_task_instance_anomaly
 from airflow.listeners import hookimpl
-from airflow.models.taskinstance import TaskInstance
 from airflow.utils.session import create_session
 from airflow.utils.state import TaskInstanceState
 
@@ -78,6 +77,8 @@ def _get_historical_runtimes(task_instance: Any, detector: AnomalyDetector, sess
     metadata-layer writer that can combine persisted task-instance state with
     anomaly history after the final task-instance row has been durably handled.
     """
+    from airflow.models.taskinstance import TaskInstance
+
     current_map_index = getattr(task_instance, "map_index", -1)
     current_try_number = getattr(task_instance, "try_number", 0)
 
