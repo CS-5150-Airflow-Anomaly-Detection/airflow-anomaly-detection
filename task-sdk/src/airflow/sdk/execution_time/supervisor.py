@@ -97,6 +97,7 @@ from airflow.sdk.execution_time.comms import (
     MaskSecret,
     PrevSuccessfulDagRunResult,
     PutVariable,
+    RecordTaskAnomaly,
     RescheduleTask,
     ResendLoggingFD,
     RetryTask,
@@ -1313,6 +1314,8 @@ class ActivitySubprocess(WatchedSubprocess):
             self.client.task_instances.reschedule(self.id, msg)
         elif isinstance(msg, SkipDownstreamTasks):
             self.client.task_instances.skip_downstream_tasks(self.id, msg)
+        elif isinstance(msg, RecordTaskAnomaly):
+            self.client.task_instances.record_anomaly(self.id, msg.model_dump(exclude={"type"}))
         elif isinstance(msg, SetXCom):
             self.client.xcoms.set(
                 msg.dag_id, msg.run_id, msg.task_id, msg.key, msg.value, msg.map_index, msg.mapped_length

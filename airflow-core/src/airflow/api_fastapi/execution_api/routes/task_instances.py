@@ -667,6 +667,45 @@ def ti_put_rtif(
     return {"message": "Rendered task instance fields successfully set"}
 
 
+@ti_id_router.put(
+    "/{task_instance_id}/anomaly",
+    status_code=status.HTTP_201_CREATED,
+    operation_id="put_task_anomaly",
+    summary="Record task instance anomaly",
+    description="Upsert an anomaly detection result for a task instance. "
+    "Called by the worker after anomaly evaluation completes.",
+    responses={
+        status.HTTP_404_NOT_FOUND: {"description": "Task Instance not found"},
+    },
+)
+def ti_put_anomaly(
+    task_instance_id: UUID,
+    body: Annotated[dict, Body()],
+    session: SessionDep,
+):
+    """Record an anomaly detection result for a task instance."""
+    from airflow.anomaly_detection.task_recorder import record_task_instance_anomaly
+    from airflow.models.taskinstance import TaskInstance
+
+    ti_id_str = str(task_instance_id)
+    bind_contextvars(ti_id=ti_id_str)
+    log.info("Recording task anomaly", body_keys=list(body.keys()))
+
+    ti = session.scalar(select(TaskInstance).where(TaskInstance.id == ti_id_str))
+    if not ti:
+        log.error("Task Instance not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+    record_task_instance_anomaly(
+        session=session,
+        task_instance=ti,
+        is_anomalous=body["is_anomalous"],
+        detector_name=body["detector_name"],
+        reason=body.get("reason"),
+    )
+    return {"message": "Task anomaly recorded"}
+
+
 @ti_id_router.patch(
     "/{task_instance_id}/rendered-map-index",
     status_code=status.HTTP_204_NO_CONTENT,

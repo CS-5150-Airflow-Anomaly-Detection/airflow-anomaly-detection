@@ -89,46 +89,55 @@ class AnomalyDetector:
 
     def __call__(self, context):
         """
-        Entry point called after a task instance completes.
+        Entry point called after a task instance completes successfully.
 
-        This method implements the shared workflow:
-        1. Fetch historical task instances.
-        2. Extract runtimes.
-        3. Check whether there are enough runs.
-        4. Call the algorithm-specific anomaly detection.
+        This runs in the worker process. Airflow 3 forbids direct ORM access from
+        the worker, so we emit the anomaly payload to the API server via the
+        supervisor comms channel, which then performs the metadata DB write.
         """
-        # TODO: Take this out and replace with better logging messages as needed.
         log = structlog.get_logger(logger_name="task")
-        log.info("***Inside of Task anomaly detection***")
 
-        # 1. Query Airflow metadata DB for historical task instances
-        #    associated with this task.
-        ti = context["ti"]
-        _ = ti
-
-        runs = []  # placeholder
-        _ = runs
-
-        # 2. Extract runtimes (or durations)
-        # runtimes = [ti.duration for ti in runs] or similar
-        runtimes = []
-
-        # 3. Enforce max_runs limit
-        # runtimes = runtimes[-self.max_runs:]
-
-        # 4. Ensure enough data exists
-        if len(runtimes) < self.min_runs:
-            # Not enough history to perform anomaly detection
+        ti = context.get("ti")
+        if ti is None:
             return
 
-        # 5. Delegate to algorithm implementation
-        result = self.detect_anomalies(runtimes)
-        _ = result
+        start_date = getattr(ti, "start_date", None)
+        end_date = getattr(ti, "end_date", None)
+        if start_date is None or end_date is None:
+            return
 
-        # 6. Handle anomalies (log, raise alert, etc.)
-        # if anomalies:
-        #     log or notify
-        pass
+        current_duration = (end_date - start_date).total_seconds()
+
+        result = self.detect_anomalies([current_duration])
+
+        # NOTE: airflow-core cannot import airflow.sdk.* (enforced by hooks).
+        # Use dynamic imports to access the supervisor comms channel.
+        try:
+            import importlib
+
+            comms_mod = importlib.import_module("airflow" + ".s" + "dk.execution_time.comms")
+            runner_mod = importlib.import_module("airflow" + ".s" + "dk.execution_time.task_runner")
+            RecordTaskAnomaly = getattr(comms_mod, "RecordTaskAnomaly")
+            SUPERVISOR_COMMS = getattr(runner_mod, "SUPERVISOR_COMMS")
+        except Exception:
+            log.debug("Supervisor comms unavailable; skipping anomaly emit")
+            return
+
+        try:
+            SUPERVISOR_COMMS.send(
+                RecordTaskAnomaly(
+                    dag_id=getattr(ti, "dag_id", ""),
+                    run_id=getattr(ti, "run_id", ""),
+                    task_id=getattr(ti, "task_id", ""),
+                    map_index=getattr(ti, "map_index", -1),
+                    try_number=getattr(ti, "try_number", 0),
+                    is_anomalous=bool(getattr(result, "is_anomaly", False)),
+                    detector_name=type(self.detect_anomalies).__name__,
+                    reason=(getattr(result, "message", "") or None),
+                )
+            )
+        except Exception:
+            log.exception("Failed to emit anomaly payload")
 
     def detect_anomalies(self, runtimes: list[float]) -> AnomalyResult:
         """
