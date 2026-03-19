@@ -680,10 +680,11 @@ def ti_put_rtif(
 )
 def ti_put_anomaly(
     task_instance_id: UUID,
-    body: Annotated[dict, Body()],
+    body: Annotated[dict[str, JsonValue], Body()],
     session: SessionDep,
 ):
-    """Record an anomaly detection result for a task instance."""
+    """Evaluate and record an anomaly detection result for a task instance."""
+    from airflow.anomaly_detection.evaluator import evaluate_task_instance_anomaly
     from airflow.anomaly_detection.task_recorder import record_task_instance_anomaly
     from airflow.models.taskinstance import TaskInstance
 
@@ -696,12 +697,22 @@ def ti_put_anomaly(
         log.error("Task Instance not found")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
+    evaluation = evaluate_task_instance_anomaly(
+        session=session,
+        task_instance=ti,
+        end_date=ti.end_date or timezone.utcnow(),
+        min_runs=int(body["min_runs"]),
+        max_runs=int(body["max_runs"]),
+        algorithm_name=str(body["algorithm_name"]),
+        algorithm_config=cast("dict[str, Any]", body.get("algorithm_config") or {}),
+    )
+
     record_task_instance_anomaly(
         session=session,
         task_instance=ti,
-        is_anomalous=body["is_anomalous"],
-        detector_name=body["detector_name"],
-        reason=body.get("reason"),
+        is_anomalous=evaluation.is_anomalous,
+        detector_name=evaluation.detector_name,
+        reason=evaluation.reason,
     )
     return {"message": "Task anomaly recorded"}
 

@@ -36,6 +36,7 @@ initialize_breeze_prek(__name__, __file__)
 POSSIBLE_TEST_FOLDERS = [
     "_internals",
     "always",
+    "anomaly_detection",
     "api",
     "api_internal",
     "api_fastapi",

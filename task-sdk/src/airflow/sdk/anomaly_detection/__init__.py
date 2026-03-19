@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,29 +16,6 @@
 # under the License.
 from __future__ import annotations
 
-from functools import cache
+from airflow.sdk.anomaly_detection.detector import AlwaysAnomaly, AnomalyDetector, ThresholdAnomaly
 
-from airflow.sdk._shared.listeners.listener import ListenerManager
-from airflow.sdk._shared.listeners.spec import lifecycle, taskinstance
-from airflow.sdk.plugins_manager import integrate_listener_plugins
-
-
-@cache
-def get_listener_manager() -> ListenerManager:
-    """
-    Get a listener manager for task sdk.
-
-    Registers the following listeners:
-    - lifecycle: on_starting, before_stopping
-    - taskinstance: on_task_instance_running, on_task_instance_success, etc.
-    """
-    _listener_manager = ListenerManager()
-
-    _listener_manager.add_hookspecs(lifecycle)
-    _listener_manager.add_hookspecs(taskinstance)
-
-    integrate_listener_plugins(_listener_manager)  # type: ignore[arg-type]
-    return _listener_manager
-
-
-__all__ = ["get_listener_manager", "ListenerManager"]
+__all__ = ["AlwaysAnomaly", "AnomalyDetector", "ThresholdAnomaly"]

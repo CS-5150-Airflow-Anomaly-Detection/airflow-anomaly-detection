@@ -1,4 +1,3 @@
-#
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,29 +16,22 @@
 # under the License.
 from __future__ import annotations
 
-from functools import cache
-
-from airflow.sdk._shared.listeners.listener import ListenerManager
-from airflow.sdk._shared.listeners.spec import lifecycle, taskinstance
-from airflow.sdk.plugins_manager import integrate_listener_plugins
+from airflow.sdk.anomaly_detection import AnomalyDetector, ThresholdAnomaly
 
 
-@cache
-def get_listener_manager() -> ListenerManager:
-    """
-    Get a listener manager for task sdk.
+def test_anomaly_detector_emits_declarative_request(monkeypatch):
+    sent = []
 
-    Registers the following listeners:
-    - lifecycle: on_starting, before_stopping
-    - taskinstance: on_task_instance_running, on_task_instance_success, etc.
-    """
-    _listener_manager = ListenerManager()
+    class FakeComms:
+        def send(self, msg):
+            sent.append(msg)
 
-    _listener_manager.add_hookspecs(lifecycle)
-    _listener_manager.add_hookspecs(taskinstance)
+    monkeypatch.setattr("airflow.sdk.execution_time.task_runner.SUPERVISOR_COMMS", FakeComms(), raising=False)
 
-    integrate_listener_plugins(_listener_manager)  # type: ignore[arg-type]
-    return _listener_manager
+    detector = AnomalyDetector(min_runs=2, max_runs=5, algorithm=ThresholdAnomaly(max_runtime=12.0))
+    detector({"ti": object()})
 
-
-__all__ = ["get_listener_manager", "ListenerManager"]
+    assert len(sent) == 1
+    assert sent[0].algorithm_name == "threshold"
+    assert sent[0].max_runs == 5
+    assert sent[0].algorithm_config == {"min_runtime": None, "max_runtime": 12.0}

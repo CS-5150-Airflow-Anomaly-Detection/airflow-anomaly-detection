@@ -1019,16 +1019,12 @@ class MaskSecret(BaseModel):
 
 
 class RecordTaskAnomaly(BaseModel):
-    """Record an anomaly detection result for a completed task instance."""
+    """Ask the API server to evaluate and record anomaly results for a completed TI."""
 
-    dag_id: str
-    run_id: str
-    task_id: str
-    map_index: int
-    try_number: int
-    is_anomalous: bool
-    detector_name: str
-    reason: str | None = None
+    min_runs: int
+    max_runs: int
+    algorithm_name: str
+    algorithm_config: dict[str, JsonValue] = Field(default_factory=dict)
     type: Literal["RecordTaskAnomaly"] = "RecordTaskAnomaly"
 
 
