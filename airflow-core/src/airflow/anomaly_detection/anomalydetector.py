@@ -85,7 +85,7 @@ class AnomalyDetector:
         """
         self.min_runs = min_runs
         self.max_runs = max_runs
-        self.detect_anomalies = algorithm
+        self.algorithm = algorithm
 
     def __call__(self, context):
         """
@@ -108,7 +108,7 @@ class AnomalyDetector:
 
         current_duration = (end_date - start_date).total_seconds()
 
-        result = self.detect_anomalies([current_duration])
+        result = self.algorithm([current_duration])
 
         # NOTE: airflow-core cannot import airflow.sdk.* (enforced by hooks).
         # Use dynamic imports to access the supervisor comms channel.
@@ -132,7 +132,7 @@ class AnomalyDetector:
                     map_index=getattr(ti, "map_index", -1),
                     try_number=getattr(ti, "try_number", 0),
                     is_anomalous=bool(getattr(result, "is_anomaly", False)),
-                    detector_name=type(self.detect_anomalies).__name__,
+                    detector_name=type(self.algorithm).__name__,
                     reason=(getattr(result, "message", "") or None),
                 )
             )
