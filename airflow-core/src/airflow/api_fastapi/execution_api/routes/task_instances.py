@@ -684,7 +684,7 @@ def ti_put_anomaly(
     session: SessionDep,
 ):
     """Record an anomaly detection result for a task instance."""
-    from airflow.anomaly_detection.task_recorder import record_task_instance_anomaly
+    from airflow.models.task_instance_anomaly import record_task_instance_anomaly
     from airflow.models.taskinstance import TaskInstance
 
     ti_id_str = str(task_instance_id)

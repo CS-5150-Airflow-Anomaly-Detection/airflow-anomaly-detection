@@ -17,7 +17,6 @@
 # under the License.
 from __future__ import annotations
 
-import importlib
 from functools import cache
 
 from airflow.sdk._shared.listeners.listener import ListenerManager
@@ -38,10 +37,6 @@ def get_listener_manager() -> ListenerManager:
 
     _listener_manager.add_hookspecs(lifecycle)
     _listener_manager.add_hookspecs(taskinstance)
-    # Temporary internal registration for the anomaly listener until it moves
-    # behind the normal built-in listener/plugin wiring.
-    anomaly_listener = importlib.import_module("airflow.anomaly_detection.listener")
-    _listener_manager.add_listener(anomaly_listener)
 
     integrate_listener_plugins(_listener_manager)  # type: ignore[arg-type]
     return _listener_manager

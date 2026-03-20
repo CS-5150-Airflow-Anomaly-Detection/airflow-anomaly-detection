@@ -20,6 +20,13 @@ import math
 
 import structlog
 
+__all__ = [
+    "AlwaysAnomaly",
+    "AnomalyDetector",
+    "AnomalyResult",
+    "ThresholdAnomaly",
+]
+
 
 class AnomalyResult:
     """Result of anomaly detection."""
@@ -31,11 +38,10 @@ class AnomalyResult:
     ):
         self.is_anomaly = is_anomaly
         self.message = message
-        # TODO: optionally extend with other information
 
 
 class AlwaysAnomaly:
-    """This is the debugger/testing anomaly type that marks all TI as anomalies."""
+    """Debugger/testing anomaly type that marks all TI as anomalies."""
 
     def __init__(self):
         pass
@@ -45,7 +51,7 @@ class AlwaysAnomaly:
 
 
 class ThresholdAnomaly:
-    """This anomaly type defineds a threshold that if a TI surpasses will propagate an anomaly."""
+    """Anomaly type: if the latest runtime is outside [min_runtime, max_runtime], flag an anomaly."""
 
     def __init__(self, min_runtime=-math.inf, max_runtime=math.inf):
         self.min_runtime = min_runtime
@@ -94,6 +100,8 @@ class AnomalyDetector:
         This runs in the worker process. Airflow 3 forbids direct ORM access from
         the worker, so we emit the anomaly payload to the API server via the
         supervisor comms channel, which then performs the metadata DB write.
+
+        Imports are deferred to runtime so DAG parsing does not load execution modules.
         """
         log = structlog.get_logger(logger_name="task")
 
@@ -110,15 +118,9 @@ class AnomalyDetector:
 
         result = self.algorithm([current_duration])
 
-        # NOTE: airflow-core cannot import airflow.sdk.* (enforced by hooks).
-        # Use dynamic imports to access the supervisor comms channel.
         try:
-            import importlib
-
-            comms_mod = importlib.import_module("airflow" + ".s" + "dk.execution_time.comms")
-            runner_mod = importlib.import_module("airflow" + ".s" + "dk.execution_time.task_runner")
-            RecordTaskAnomaly = getattr(comms_mod, "RecordTaskAnomaly")
-            SUPERVISOR_COMMS = getattr(runner_mod, "SUPERVISOR_COMMS")
+            from airflow.sdk.execution_time.comms import RecordTaskAnomaly
+            from airflow.sdk.execution_time.task_runner import SUPERVISOR_COMMS
         except Exception:
             log.debug("Supervisor comms unavailable; skipping anomaly emit")
             return
@@ -154,14 +156,3 @@ class AnomalyDetector:
             Information about detected anomalies
         """
         raise NotImplementedError()
-
-
-# def attach_anomaly_detector(task, detector: AnomalyDetector):
-#     existing_callback = task.on_success_callback
-#     def callback(context):
-#         if existing_callback:
-#             existing_callback(context)
-#
-#         detector.trigger_anomaly_detection(context)
-#
-#     task.on_success_callback = callback

@@ -20,6 +20,9 @@ from typing import TYPE_CHECKING
 
 __all__ = [
     "__version__",
+    "AlwaysAnomaly",
+    "AnomalyDetector",
+    "AnomalyResult",
     "Asset",
     "AssetAlias",
     "AssetAll",
@@ -59,6 +62,7 @@ __all__ = [
     "SyncCallback",
     "TaskGroup",
     "TaskInstanceState",
+    "ThresholdAnomaly",
     "Trace",
     "TriggerRule",
     "Variable",
@@ -96,6 +100,12 @@ if TYPE_CHECKING:
     from airflow.sdk.bases.operatorlink import BaseOperatorLink
     from airflow.sdk.bases.sensor import BaseSensorOperator, PokeReturnValue
     from airflow.sdk.configuration import AirflowSDKConfigParser
+    from airflow.sdk.definitions.anomaly_detection import (
+        AlwaysAnomaly,
+        AnomalyDetector,
+        AnomalyResult,
+        ThresholdAnomaly,
+    )
     from airflow.sdk.definitions.asset import Asset, AssetAlias, AssetAll, AssetAny, AssetWatcher
     from airflow.sdk.definitions.asset.decorators import asset
     from airflow.sdk.definitions.asset.metadata import Metadata
@@ -136,6 +146,9 @@ if TYPE_CHECKING:
     conf: AirflowSDKConfigParser
 
 __lazy_imports: dict[str, str] = {
+    "AlwaysAnomaly": ".definitions.anomaly_detection",
+    "AnomalyDetector": ".definitions.anomaly_detection",
+    "AnomalyResult": ".definitions.anomaly_detection",
     "Asset": ".definitions.asset",
     "AssetAlias": ".definitions.asset",
     "AssetAll": ".definitions.asset",
@@ -176,6 +189,7 @@ __lazy_imports: dict[str, str] = {
     "SyncCallback": ".definitions.callback",
     "TaskGroup": ".definitions.taskgroup",
     "TaskInstanceState": ".api.datamodels._generated",
+    "ThresholdAnomaly": ".definitions.anomaly_detection",
     "Trace": ".observability.trace",
     "TriggerRule": ".api.datamodels._generated",
     "Variable": ".definitions.variable",
