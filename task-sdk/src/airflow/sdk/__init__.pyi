@@ -36,6 +36,12 @@ from airflow.sdk.bases.sensor import (
     PokeReturnValue as PokeReturnValue,
 )
 from airflow.sdk.configuration import AirflowSDKConfigParser
+from airflow.sdk.definitions.anomaly_detection import (
+    AlwaysAnomaly as AlwaysAnomaly,
+    AnomalyDetector as AnomalyDetector,
+    AnomalyResult as AnomalyResult,
+    ThresholdAnomaly as ThresholdAnomaly,
+)
 from airflow.sdk.definitions.asset import (
     Asset as Asset,
     AssetAlias as AssetAlias,
@@ -85,6 +91,9 @@ conf: AirflowSDKConfigParser
 
 __all__ = [
     "__version__",
+    "AlwaysAnomaly",
+    "AnomalyDetector",
+    "AnomalyResult",
     "Asset",
     "AssetAlias",
     "AssetAll",
@@ -120,6 +129,7 @@ __all__ = [
     "SecretCache",
     "TaskGroup",
     "TaskInstanceState",
+    "ThresholdAnomaly",
     "TriggerRule",
     "Variable",
     "WeightRule",
