@@ -93,6 +93,34 @@ class AnomalyDetector:
         self.max_runs = max_runs
         self.algorithm = algorithm
 
+    def _get_historical_runtimes(self, ti) -> list[float]:
+        """Fetch durations from prior successful task instances via supervisor comms."""
+        from airflow.sdk import TaskInstanceState
+
+        runtimes: list[float] = []
+        cursor_logical_date = None
+        map_index = getattr(ti, "map_index", -1)
+
+        while len(runtimes) < max(self.max_runs - 1, 0):
+            previous_ti = ti.get_previous_ti(
+                state=TaskInstanceState.SUCCESS,
+                logical_date=cursor_logical_date,
+                map_index=map_index,
+            )
+            if previous_ti is None:
+                break
+
+            if previous_ti.duration is not None:
+                runtimes.append(previous_ti.duration)
+
+            # Move the cursor back so the next request finds an older TI.
+            cursor_logical_date = previous_ti.logical_date
+            if cursor_logical_date is None:
+                break
+
+        runtimes.reverse()
+        return runtimes
+
     def __call__(self, context):
         """
         Entry point called after a task instance completes successfully.
@@ -115,8 +143,20 @@ class AnomalyDetector:
             return
 
         current_duration = (end_date - start_date).total_seconds()
+        historical_runtimes = self._get_historical_runtimes(ti)
+        runtimes = [*historical_runtimes, current_duration]
 
-        result = self.algorithm([current_duration])
+        log.info("Retrieved runtimes:", found_runs=len(runtimes), runtimes=runtimes)
+
+        if len(runtimes) < self.min_runs:
+            log.debug(
+                "Skipping anomaly detection due to insufficient successful runs",
+                found_runs=len(runtimes),
+                required_runs=self.min_runs,
+            )
+            return
+
+        result = self.algorithm(runtimes)
 
         try:
             from airflow.sdk.execution_time.comms import RecordTaskAnomaly
