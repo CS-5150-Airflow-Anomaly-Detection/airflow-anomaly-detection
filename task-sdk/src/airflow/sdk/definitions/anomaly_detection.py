@@ -20,6 +20,8 @@ import math
 
 import structlog
 
+from airflow.sdk import TaskInstanceState
+
 __all__ = [
     "AlwaysAnomaly",
     "AnomalyDetector",
@@ -95,8 +97,6 @@ class AnomalyDetector:
 
     def _get_historical_runtimes(self, ti) -> list[float]:
         """Fetch durations from prior successful task instances via supervisor comms."""
-        from airflow.sdk import TaskInstanceState
-
         runtimes: list[float] = []
         cursor_logical_date = None
         map_index = getattr(ti, "map_index", -1)
@@ -159,6 +159,7 @@ class AnomalyDetector:
         result = self.algorithm(runtimes)
 
         try:
+            # Import runtime dependencies
             from airflow.sdk.execution_time.comms import RecordTaskAnomaly
             from airflow.sdk.execution_time.task_runner import SUPERVISOR_COMMS
         except Exception:
@@ -180,19 +181,3 @@ class AnomalyDetector:
             )
         except Exception:
             log.exception("Failed to emit anomaly payload")
-
-    def detect_anomalies(self, runtimes: list[float]) -> AnomalyResult:
-        """
-        Algorithm-specific anomaly detection.  Override in subclasses.
-
-        Parameters
-        ----------
-        runtimes : List[float]
-            Historical task runtimes.
-
-        Returns
-        -------
-        AnomalyResult
-            Information about detected anomalies
-        """
-        raise NotImplementedError()
