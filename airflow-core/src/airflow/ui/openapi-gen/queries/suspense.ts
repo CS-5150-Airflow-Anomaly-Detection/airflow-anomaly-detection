@@ -1,7 +1,7 @@
 // generated with @7nohe/openapi-react-query-codegen@1.6.2 
 
 import { UseQueryOptions, useSuspenseQuery } from "@tanstack/react-query";
-import { AssetService, AuthLinksService, BackfillService, CalendarService, ConfigService, ConnectionService, DagAnomalyService, DagRunService, DagService, DagSourceService, DagStatsService, DagVersionService, DagWarningService, DashboardService, DependenciesService, EventLogService, ExperimentalService, ExtraLinksService, GanttService, GridService, ImportErrorService, JobService, LoginService, MonitorService, PluginService, PoolService, ProviderService, StructureService, TaskInstanceService, TaskService, TeamsService, VariableService, VersionService, XcomService } from "../requests/services.gen";
+import { AssetService, AuthLinksService, BackfillService, CalendarService, ConfigService, ConnectionService, DagAnomalyService, DagRunService, DagService, DagSourceService, DagStatsService, DagVersionService, DagWarningService, DashboardService, DependenciesService, EventLogService, ExperimentalService, ExtraLinksService, GanttService, GridService, ImportErrorService, JobService, LoginService, MonitorService, PluginService, PoolService, ProviderService, StructureService, TaskInstanceAnomalyService, TaskInstanceService, TaskService, TeamsService, VariableService, VersionService, XcomService } from "../requests/services.gen";
 import { DagRunState, DagWarningType } from "../requests/types.gen";
 import * as Common from "./common";
 /**
@@ -1467,6 +1467,25 @@ export const useDagAnomalyServiceGetDagAnomaliesSuspense = <TData = Common.DagAn
   limit?: number;
   offset?: number;
 } = {}, queryKey?: TQueryKey, options?: Omit<UseQueryOptions<TData, TError>, "queryKey" | "queryFn">) => useSuspenseQuery<TData, TError>({ queryKey: Common.UseDagAnomalyServiceGetDagAnomaliesKeyFn({ dagId, limit, offset }, queryKey), queryFn: () => DagAnomalyService.getDagAnomalies({ dagId, limit, offset }) as TData, ...options });
+/**
+* Get Task Instance Anomalies
+* Get all Task Instance anomalies.
+* @param data The data for the request.
+* @param data.dagId
+* @param data.taskId
+* @param data.runId
+* @param data.limit
+* @param data.offset
+* @returns TaskInstanceAnomalyCollectionResponse Successful Response
+* @throws ApiError
+*/
+export const useTaskInstanceAnomalyServiceGetTaskInstanceAnomaliesSuspense = <TData = Common.TaskInstanceAnomalyServiceGetTaskInstanceAnomaliesDefaultResponse, TError = unknown, TQueryKey extends Array<unknown> = unknown[]>({ dagId, limit, offset, runId, taskId }: {
+  dagId?: string;
+  limit?: number;
+  offset?: number;
+  runId?: string;
+  taskId?: string;
+} = {}, queryKey?: TQueryKey, options?: Omit<UseQueryOptions<TData, TError>, "queryKey" | "queryFn">) => useSuspenseQuery<TData, TError>({ queryKey: Common.UseTaskInstanceAnomalyServiceGetTaskInstanceAnomaliesKeyFn({ dagId, limit, offset, runId, taskId }, queryKey), queryFn: () => TaskInstanceAnomalyService.getTaskInstanceAnomalies({ dagId, limit, offset, runId, taskId }) as TData, ...options });
 /**
 * Get Health
 * @returns HealthInfoResponse Successful Response

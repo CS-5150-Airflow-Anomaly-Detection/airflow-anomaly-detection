@@ -279,6 +279,10 @@ class TaskInstanceOperations:
         self.client.patch(f"task-instances/{id}/rendered-map-index", json=rendered_map_index)
         return OKResponse(ok=True)
 
+    def record_anomaly(self, id: uuid.UUID, body: dict) -> None:
+        """Record an anomaly detection result for a task instance via the API server."""
+        self.client.put(f"task-instances/{id}/anomaly", json=body)
+
     def get_previous_successful_dagrun(self, id: uuid.UUID) -> PrevSuccessfulDagRunResponse:
         """
         Get the previous successful dag run for a given task instance.
