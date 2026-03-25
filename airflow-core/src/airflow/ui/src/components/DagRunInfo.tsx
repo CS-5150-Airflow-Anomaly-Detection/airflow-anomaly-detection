@@ -18,6 +18,7 @@
  */
 import { VStack, Text, Box, HStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
+import { FiAlertTriangle } from "react-icons/fi";
 
 import type { DAGRunResponse } from "openapi/requests/types.gen";
 import { StateBadge } from "src/components/StateBadge";
@@ -65,11 +66,12 @@ const DagRunInfo = ({ endDate, isAnomalous, logicalDate, runAfter, startDate, st
           {state !== undefined && isAnomalous && (
             <Box
               aria-label={translate("anomalyDetected", "Anomaly detected")}
-              bg="red.500"
-              borderRadius="full"
+              color="orange.600"
               flexShrink={0}
-              boxSize="1.5rem"
-            />
+              lineHeight={0}
+            >
+              <FiAlertTriangle size={22} strokeWidth={2.75} />
+            </Box>
           )}
         </HStack>
       </Box>

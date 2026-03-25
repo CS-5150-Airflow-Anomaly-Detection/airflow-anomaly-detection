@@ -26,7 +26,7 @@ import { FiChevronsRight } from "react-icons/fi";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import type { DagRunState, DagRunType, GridRunsResponse } from "openapi/requests";
-import { useDagAnomalyServiceGetDagAnomalies } from "openapi/queries";
+import { useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies } from "openapi/queries";
 import { useOpenGroups } from "src/context/openGroups";
 import { NavigationModes, useNavigation } from "src/hooks/navigation";
 import { useGridRuns } from "src/queries/useGridRuns.ts";
@@ -98,17 +98,29 @@ export const Grid = ({ dagRunState, limit, runType, showGantt, triggeringUser }:
     triggeringUser,
   });
 
-  const { data: anomalyData } = useDagAnomalyServiceGetDagAnomalies({
-    dagId: dagId || undefined,
-    limit: 500,
-    offset: 0,
-  });
-  const allAnomalies = anomalyData?.dag_anomalies ?? [];
-  const anomalousRunIds = new Set(
-    (dagId ? allAnomalies.filter((a) => a.dag_id === dagId && a.is_anomalous) : []).map(
-      (a) => a.run_id,
-    ),
+  const { data: tiAnomalyData } = useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies(
+    {
+      dagId: dagId || undefined,
+      limit: 2000,
+      offset: 0,
+    },
+    undefined,
+    {
+      enabled: Boolean(dagId),
+      refetchInterval: 5000,
+      refetchOnWindowFocus: true,
+    },
   );
+  const anomalousRows = (tiAnomalyData?.task_instance_anomalies ?? []).filter(
+    (a) => a.dag_id === dagId && a.is_anomalous,
+  );
+  const anomalousCellKeys = new Set(
+    anomalousRows.map((a) => `${a.run_id}::${a.task_id}::${a.map_index}`),
+  );
+  const anomalousDetectorByCellKey = new Map<string, string>();
+  for (const a of anomalousRows) {
+    anomalousDetectorByCellKey.set(`${a.run_id}::${a.task_id}::${a.map_index}`, a.detector_name);
+  }
 
   // calculate dag run bar heights relative to max
   const max = Math.max.apply(
@@ -212,7 +224,8 @@ export const Grid = ({ dagRunState, limit, runType, showGantt, triggeringUser }:
             {gridRuns?.map((dr: GridRunsResponse) => (
               <TaskInstancesColumn
                 key={dr.run_id}
-                isAnomalous={anomalousRunIds.has(dr.run_id)}
+                anomalousCellKeys={anomalousCellKeys}
+                anomalousDetectorByCellKey={anomalousDetectorByCellKey}
                 nodes={flatNodes}
                 onCellClick={handleCellClick}
                 run={dr}

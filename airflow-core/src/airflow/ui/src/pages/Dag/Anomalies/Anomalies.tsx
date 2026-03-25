@@ -30,7 +30,7 @@ import { FiAlertTriangle } from "react-icons/fi";
 import { useParams } from "react-router-dom";
 
 import {
-  useDagAnomalyServiceGetDagAnomalies,
+  useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies,
   useTaskServiceGetTasks,
 } from "openapi/queries";
 import Time from "src/components/Time";
@@ -38,14 +38,43 @@ import { useOpenGroups } from "src/context/openGroups";
 import { useGridStructure } from "src/queries/useGridStructure.ts";
 import { flattenNodes } from "src/layouts/Details/Grid/utils";
 
+import type { TaskInstanceAnomalyResponse } from "openapi/requests/types.gen";
+
+/** When the API omits `reason`, show a human-readable line derived from `detector_name` (UI-only). */
+const getTaskAnomalyReasonDisplay = (anomaly: TaskInstanceAnomalyResponse): string => {
+  const trimmed = anomaly.reason?.trim();
+
+  if (trimmed !== undefined && trimmed !== "") {
+    return trimmed;
+  }
+
+  const { detector_name: detectorName } = anomaly;
+  const fallbackByDetector: Record<string, string> = {
+    AlwaysAnomaly: "Detector is configured to flag every run (typically for testing).",
+    ThresholdAnomaly:
+      "Latest task runtime fell outside the configured min/max threshold for the historical window.",
+  };
+
+  return fallbackByDetector[detectorName] ?? `Flagged by detector ${detectorName}.`;
+};
+
 export const Anomalies = () => {
   const { dagId = "" } = useParams();
 
-  const { data: anomalyData, isLoading: isLoadingAnomalies, error } = useDagAnomalyServiceGetDagAnomalies({
-    dagId: dagId || undefined,
-    limit: 100,
-    offset: 0,
-  });
+  const { data: anomalyData, isLoading: isLoadingAnomalies, error } =
+    useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies(
+      {
+        dagId: dagId || undefined,
+        limit: 500,
+        offset: 0,
+      },
+      undefined,
+      {
+        enabled: Boolean(dagId),
+        refetchInterval: 3000,
+        refetchOnWindowFocus: true,
+      },
+    );
 
   const { data: tasksData, isLoading: isLoadingTasks } = useTaskServiceGetTasks(
     { dagId: dagId || "" },
@@ -58,15 +87,17 @@ export const Anomalies = () => {
   const { flatNodes } = flattenNodes(dagStructure, openGroupIds);
   const gridOrderIndex = new Map(flatNodes.map((node, i) => [node.id, i]));
 
-  const allAnomalies = anomalyData?.dag_anomalies ?? [];
-  const anomalies = dagId ? allAnomalies.filter((a) => a.dag_id === dagId) : [];
-  const anomaliesByTime = [...anomalies].sort(
-    (a, b) =>
-      new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime(),
-  );
-  const firstAnomaly = anomaliesByTime[0] ?? null;
-  const latestAnomaly = anomaliesByTime[anomaliesByTime.length - 1] ?? null;
-  const totalEntries = anomalies.length;
+  const allAnomalies = anomalyData?.task_instance_anomalies ?? [];
+  const anomaliesByTaskId = new Map<string, typeof allAnomalies>();
+  for (const anomaly of allAnomalies) {
+    const taskAnomalies = anomaliesByTaskId.get(anomaly.task_id);
+    if (taskAnomalies) {
+      taskAnomalies.push(anomaly);
+    } else {
+      anomaliesByTaskId.set(anomaly.task_id, [anomaly]);
+    }
+  }
+
   const tasksRaw = tasksData?.tasks ?? [];
   const tasks = [...tasksRaw].sort((a, b) => {
     const idA = a.task_id ?? a.task_display_name ?? "";
@@ -128,43 +159,58 @@ export const Anomalies = () => {
                     </Table.Cell>
                   </Table.Row>
                 ) : (
-                  tasks.map((task) => (
-                    <Table.Row key={task.task_id ?? task.task_display_name ?? ""}>
-                      <Table.Cell>
-                        {task.task_display_name ?? task.task_id ?? "—"}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {firstAnomaly ? (
-                          <Time datetime={firstAnomaly.created_at} />
-                        ) : (
-                          "—"
-                        )}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {latestAnomaly ? (
-                          <Time datetime={latestAnomaly.updated_at} />
-                        ) : (
-                          "—"
-                        )}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {latestAnomaly?.detector_name ?? "—"}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {latestAnomaly?.reason ?? "—"}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Badge
-                          colorPalette={
-                            totalEntries > 0 ? "orange" : "gray"
-                          }
-                          size="sm"
-                        >
-                          {totalEntries > 0 ? "Anomalous" : "Normal"}
-                        </Badge>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))
+                  tasks.map((task) => {
+                    const taskId = task.task_id ?? "";
+                    const taskAnomalies = taskId ? (anomaliesByTaskId.get(taskId) ?? []) : [];
+                    const anomaliesByTime = [...taskAnomalies].sort(
+                      (a, b) =>
+                        new Date(a.created_at).getTime() -
+                        new Date(b.created_at).getTime(),
+                    );
+                    const firstAnomaly = anomaliesByTime[0] ?? null;
+                    const latestAnomaly =
+                      anomaliesByTime[anomaliesByTime.length - 1] ?? null;
+                    const isAnomalous = latestAnomaly?.is_anomalous ?? false;
+
+                    return (
+                      <Table.Row key={task.task_id ?? task.task_display_name ?? ""}>
+                        <Table.Cell>
+                          {task.task_display_name ?? task.task_id ?? "—"}
+                        </Table.Cell>
+                        <Table.Cell>
+                          {firstAnomaly ? (
+                            <Time datetime={firstAnomaly.created_at} />
+                          ) : (
+                            "—"
+                          )}
+                        </Table.Cell>
+                        <Table.Cell>
+                          {latestAnomaly ? (
+                            <Time datetime={latestAnomaly.updated_at} />
+                          ) : (
+                            "—"
+                          )}
+                        </Table.Cell>
+                        <Table.Cell>
+                          {latestAnomaly?.detector_name ?? "—"}
+                        </Table.Cell>
+                        <Table.Cell>
+                          {latestAnomaly ? getTaskAnomalyReasonDisplay(latestAnomaly) : "—"}
+                        </Table.Cell>
+                        <Table.Cell>
+                          {isAnomalous ? (
+                            <Badge colorPalette="orange" size="sm">
+                              Anomalous
+                            </Badge>
+                          ) : (
+                            <Badge colorPalette="green" size="sm">
+                              normal
+                            </Badge>
+                          )}
+                        </Table.Cell>
+                      </Table.Row>
+                    );
+                  })
                 )}
               </Table.Body>
             </Table.Root>
