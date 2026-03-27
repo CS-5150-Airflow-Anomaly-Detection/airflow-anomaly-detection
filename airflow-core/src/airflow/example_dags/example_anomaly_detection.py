@@ -65,7 +65,7 @@ with DAG(
         print(f"Paused for {n_seconds}")
         return n_seconds
 
-    @task(task_id="print_runtimess", task_display_name="Print greetings", trigger_rule=TriggerRule.ALL_DONE)
+    @task(task_id="print_runtimess", task_display_name="Print runtimes", trigger_rule=TriggerRule.ALL_DONE)
     def print_runtimes(runtimes) -> None:
         for r in runtimes:
             print(r)

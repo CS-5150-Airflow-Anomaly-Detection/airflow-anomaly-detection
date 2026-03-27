@@ -78,7 +78,7 @@ def record_task_instance_anomaly(
     is_anomalous: bool,
     detector_name: str,
     reason: str | None,
-) -> None:
+) -> TaskInstanceAnomaly:
     """Insert or update the TaskInstanceAnomaly row for the given TaskInstance."""
     identity = {
         "dag_id": task_instance.dag_id,
@@ -104,7 +104,11 @@ def record_task_instance_anomaly(
     )
 
     if row is None:
-        session.add(TaskInstanceAnomaly(**identity, **anomaly_values))
+        row = TaskInstanceAnomaly(**identity, **anomaly_values)
+        session.add(row)
     else:
         for field, value in anomaly_values.items():
             setattr(row, field, value)
+
+    session.flush()
+    return row

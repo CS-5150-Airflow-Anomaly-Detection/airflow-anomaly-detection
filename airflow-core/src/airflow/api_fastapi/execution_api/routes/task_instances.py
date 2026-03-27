@@ -696,14 +696,25 @@ def ti_put_anomaly(
         log.error("Task Instance not found")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
 
-    record_task_instance_anomaly(
+    anomaly = record_task_instance_anomaly(
         session=session,
         task_instance=ti,
         is_anomalous=body["is_anomalous"],
         detector_name=body["detector_name"],
         reason=body.get("reason"),
     )
-    return {"message": "Task anomaly recorded"}
+    return {
+        "message": "Task anomaly recorded",
+        "id": anomaly.id,
+        "dag_id": anomaly.dag_id,
+        "run_id": anomaly.run_id,
+        "task_id": anomaly.task_id,
+        "map_index": anomaly.map_index,
+        "try_number": anomaly.try_number,
+        "is_anomalous": anomaly.is_anomalous,
+        "detector_name": anomaly.detector_name,
+        "reason": anomaly.reason,
+    }
 
 
 @ti_id_router.patch(
