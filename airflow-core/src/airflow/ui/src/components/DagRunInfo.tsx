@@ -16,25 +16,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { VStack, Text, Box } from "@chakra-ui/react";
+import { VStack, Text, Box, HStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
+import { FiAlertTriangle } from "react-icons/fi";
 
 import type { DAGRunResponse } from "openapi/requests/types.gen";
 import { StateBadge } from "src/components/StateBadge";
 import Time from "src/components/Time";
 import { Tooltip } from "src/components/ui";
-import { getDuration } from "src/utils";
 import { getRelativeTime } from "src/utils/datetimeUtils";
 
 type Props = {
   readonly endDate?: string | null;
+  readonly isAnomalous?: boolean;
   readonly logicalDate?: string | null;
   readonly runAfter: string;
   readonly startDate?: string | null;
   readonly state?: DAGRunResponse["state"];
 };
 
-const DagRunInfo = ({ endDate, logicalDate, runAfter, startDate, state }: Props) => {
+const DagRunInfo = ({ endDate, isAnomalous, logicalDate, runAfter, startDate, state }: Props) => {
   const { t: translate } = useTranslation("common");
 
   return (
@@ -50,25 +51,8 @@ const DagRunInfo = ({ endDate, logicalDate, runAfter, startDate, state }: Props)
               <Text>
                 {translate("state")}: {translate(`common:states.${state}`)}
               </Text>
-              {Boolean(logicalDate) && (
-                <Text>
-                  {translate("logicalDate")}: <Time datetime={logicalDate} />
-                </Text>
-              )}
-              {Boolean(startDate) && (
-                <Text>
-                  {translate("startDate")}: <Time datetime={startDate} />
-                </Text>
-              )}
-              {Boolean(endDate) && (
-                <Text>
-                  {translate("endDate")}: <Time datetime={endDate} />
-                </Text>
-              )}
-              {Boolean(startDate) && (
-                <Text>
-                  {translate("duration")}: {getDuration(startDate, endDate)}
-                </Text>
+              {isAnomalous && (
+                <Text>{translate("anomalyDetected", "Performance anomaly detected")}</Text>
               )}
             </>
           )}
@@ -76,8 +60,20 @@ const DagRunInfo = ({ endDate, logicalDate, runAfter, startDate, state }: Props)
       }
     >
       <Box>
-        <Time datetime={runAfter} mr={2} showTooltip={false} />
-        {state !== undefined && <StateBadge aria-label={state} data-testid="state-badge" state={state} />}
+        <HStack display="inline-flex" gap={1}>
+          <Time datetime={runAfter} mr={2} showTooltip={false} />
+          {state !== undefined && <StateBadge aria-label={state} data-testid="state-badge" state={state} />}
+          {state !== undefined && isAnomalous && (
+            <Box
+              aria-label={translate("anomalyDetected", "Anomaly detected")}
+              color="orange.600"
+              flexShrink={0}
+              lineHeight={0}
+            >
+              <FiAlertTriangle size={22} strokeWidth={2.75} />
+            </Box>
+          )}
+        </HStack>
       </Box>
     </Tooltip>
   );

@@ -36,6 +36,7 @@ import { Overview } from "src/pages/Dag/Overview";
 import { Tasks } from "src/pages/Dag/Tasks";
 import { DagRuns } from "src/pages/DagRuns";
 import { DagsList } from "src/pages/DagsList";
+import { Anomalies } from "src/pages/Dag/Anomalies";
 import { Dashboard } from "src/pages/Dashboard";
 import { ErrorPage } from "src/pages/Error";
 import { Events } from "src/pages/Events";
@@ -167,6 +168,7 @@ export const routerConfig = [
           { element: <Overview />, index: true },
           { element: <DagRuns />, path: "runs" },
           { element: <Tasks />, path: "tasks" },
+          { element: <Anomalies />, path: "anomalies" },
           { element: <Calendar />, path: "calendar" },
           { element: <HITLTaskInstances />, path: "required_actions" },
           { element: <Backfills />, path: "backfills" },

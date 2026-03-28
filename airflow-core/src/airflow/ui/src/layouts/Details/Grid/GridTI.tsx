@@ -16,20 +16,22 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { Badge, Flex } from "@chakra-ui/react";
+import { Badge, Box, Flex } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
+import { FiAlertTriangle } from "react-icons/fi";
 import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 
 import type { LightGridTaskInstanceSummary } from "openapi/requests/types.gen";
 import { BasicTooltip } from "src/components/BasicTooltip";
 import { StateIcon } from "src/components/StateIcon";
-import Time from "src/components/Time";
 import { useHover } from "src/context/hover";
 import { buildTaskInstanceUrl } from "src/utils/links";
 
 type Props = {
+  readonly anomalyDetectorName?: string | undefined;
   readonly dagId: string;
   readonly instance: LightGridTaskInstanceSummary;
+  readonly isAnomalous?: boolean;
   readonly isGroup?: boolean;
   readonly isMapped?: boolean | null;
   readonly label: string;
@@ -38,7 +40,17 @@ type Props = {
   readonly taskId: string;
 };
 
-export const GridTI = ({ dagId, instance, isGroup, isMapped, onClick, runId, taskId }: Props) => {
+export const GridTI = ({
+  anomalyDetectorName,
+  dagId,
+  instance,
+  isAnomalous,
+  isGroup,
+  isMapped,
+  onClick,
+  runId,
+  taskId,
+}: Props) => {
   const { hoveredTaskId, setHoveredTaskId } = useHover();
   const { groupId: selectedGroupId, taskId: selectedTaskId } = useParams();
   const { t: translate } = useTranslation();
@@ -92,16 +104,16 @@ export const GridTI = ({ dagId, instance, isGroup, isMapped, onClick, runId, tas
             {instance.state
               ? translate(`common:states.${instance.state}`)
               : translate("common:states.no_status")}
-            {instance.min_start_date !== null && (
+            {isAnomalous && (
               <>
                 <br />
-                {translate("startDate")}: <Time datetime={instance.min_start_date} />
-              </>
-            )}
-            {instance.max_end_date !== null && (
-              <>
-                <br />
-                {translate("endDate")}: <Time datetime={instance.max_end_date} />
+                {translate("anomalyDetected", "Performance anomaly detected")}
+                {Boolean(anomalyDetectorName) && (
+                  <>
+                    <br />
+                    {translate("detector", "Detector")}: {anomalyDetectorName}
+                  </>
+                )}
               </>
             )}
           </>
@@ -116,21 +128,42 @@ export const GridTI = ({ dagId, instance, isGroup, isMapped, onClick, runId, tas
             search: redirectionSearch,
           }}
         >
-          <Badge
+          <Flex
             alignItems="center"
-            borderRadius={4}
-            colorPalette={instance.state ?? "none"}
-            data-testid="task-state-badge"
-            display="flex"
             height="14px"
             justifyContent="center"
-            minH={0}
-            p={0}
-            variant="solid"
+            position="relative"
             width="14px"
           >
-            <StateIcon size={10} state={instance.state} />
-          </Badge>
+            <Badge
+              alignItems="center"
+              borderRadius={4}
+              colorPalette={instance.state ?? "none"}
+              data-testid="task-state-badge"
+              display="flex"
+              height="14px"
+              justifyContent="center"
+              minH={0}
+              p={0}
+              variant="solid"
+              width="14px"
+            >
+              <StateIcon size={10} state={instance.state} />
+            </Badge>
+            {isAnomalous ? (
+              <Box
+                aria-hidden
+                bottom="-3px"
+                color="orange.600"
+                filter="drop-shadow(0 0 1.5px rgba(0,0,0,0.55))"
+                lineHeight={0}
+                position="absolute"
+                right="-3px"
+              >
+                <FiAlertTriangle size={13} strokeWidth={3.25} />
+              </Box>
+            ) : undefined}
+          </Flex>
         </Link>
       </BasicTooltip>
     </Flex>

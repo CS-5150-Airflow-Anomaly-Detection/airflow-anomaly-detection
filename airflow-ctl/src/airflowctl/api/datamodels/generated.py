@@ -780,6 +780,24 @@ class TaskInletAssetReference(BaseModel):
     updated_at: Annotated[datetime, Field(title="Updated At")]
 
 
+class TaskInstanceAnomalyResponse(BaseModel):
+    """
+    Task Instance Anomaly serializer for responses.
+    """
+
+    id: Annotated[int, Field(title="Id")]
+    dag_id: Annotated[str, Field(title="Dag Id")]
+    run_id: Annotated[str, Field(title="Run Id")]
+    task_id: Annotated[str, Field(title="Task Id")]
+    map_index: Annotated[int, Field(title="Map Index")]
+    try_number: Annotated[int, Field(title="Try Number")]
+    is_anomalous: Annotated[bool, Field(title="Is Anomalous")]
+    detector_name: Annotated[str, Field(title="Detector Name")]
+    reason: Annotated[str | None, Field(title="Reason")] = None
+    created_at: Annotated[datetime, Field(title="Created At")]
+    updated_at: Annotated[datetime, Field(title="Updated At")]
+
+
 class TaskInstanceState(str, Enum):
     """
     All possible states that a Task Instance can be in.
@@ -1685,6 +1703,17 @@ class TaskDependencyCollectionResponse(BaseModel):
     """
 
     dependencies: Annotated[list[TaskDependencyResponse], Field(title="Dependencies")]
+
+
+class TaskInstanceAnomalyCollectionResponse(BaseModel):
+    """
+    Task Instance Anomaly Collection serializer for responses.
+    """
+
+    task_instance_anomalies: Annotated[
+        list[TaskInstanceAnomalyResponse], Field(title="Task Instance Anomalies")
+    ]
+    total_entries: Annotated[int, Field(title="Total Entries")]
 
 
 class TaskInstanceHistoryResponse(BaseModel):

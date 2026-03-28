@@ -1345,6 +1345,31 @@ export type TaskInletAssetReference = {
 };
 
 /**
+ * Task Instance Anomaly Collection serializer for responses.
+ */
+export type TaskInstanceAnomalyCollectionResponse = {
+    task_instance_anomalies: Array<TaskInstanceAnomalyResponse>;
+    total_entries: number;
+};
+
+/**
+ * Task Instance Anomaly serializer for responses.
+ */
+export type TaskInstanceAnomalyResponse = {
+    id: number;
+    dag_id: string;
+    run_id: string;
+    task_id: string;
+    map_index: number;
+    try_number: number;
+    is_anomalous: boolean;
+    detector_name: string;
+    reason: string | null;
+    created_at: string;
+    updated_at: string;
+};
+
+/**
  * Task Instance Collection serializer for responses.
  */
 export type TaskInstanceCollectionResponse = {
@@ -3413,6 +3438,16 @@ export type GetDagVersionsData = {
 };
 
 export type GetDagVersionsResponse = DAGVersionCollectionResponse;
+
+export type GetTaskInstanceAnomaliesData = {
+    dagId?: string | null;
+    limit?: number;
+    offset?: number;
+    runId?: string | null;
+    taskId?: string | null;
+};
+
+export type GetTaskInstanceAnomaliesResponse = TaskInstanceAnomalyCollectionResponse;
 
 export type GetHealthResponse = HealthInfoResponse;
 
@@ -6524,6 +6559,29 @@ export type $OpenApiTs = {
                  * Not Found
                  */
                 404: HTTPExceptionResponse;
+                /**
+                 * Validation Error
+                 */
+                422: HTTPValidationError;
+            };
+        };
+    };
+    '/api/v2/task_instance_anomaly': {
+        get: {
+            req: GetTaskInstanceAnomaliesData;
+            res: {
+                /**
+                 * Successful Response
+                 */
+                200: TaskInstanceAnomalyCollectionResponse;
+                /**
+                 * Unauthorized
+                 */
+                401: HTTPExceptionResponse;
+                /**
+                 * Forbidden
+                 */
+                403: HTTPExceptionResponse;
                 /**
                  * Validation Error
                  */

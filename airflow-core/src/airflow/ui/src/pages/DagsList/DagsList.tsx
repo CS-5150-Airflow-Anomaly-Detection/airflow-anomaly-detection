@@ -47,6 +47,7 @@ import { TriggerDAGButton } from "src/components/TriggerDag/TriggerDAGButton";
 import { SearchParamsKeys, type SearchParamsKeysType } from "src/constants/searchParams";
 import { DagsLayout } from "src/layouts/DagsLayout";
 import { useConfig } from "src/queries/useConfig";
+import { useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies } from "openapi/queries";
 import { useDags } from "src/queries/useDags";
 
 import { DAGImportErrors } from "../Dashboard/Stats/DAGImportErrors";
@@ -58,6 +59,7 @@ import { SortSelect } from "./SortSelect";
 
 const createColumns = (
   translate: (key: string, options?: Record<string, unknown>) => string,
+  dagRunKeysWithAnomalousTasks: Set<string>,
 ): Array<ColumnDef<DAGWithLatestDagRunsResponse>> => [
   {
     accessorKey: "is_paused",
@@ -114,20 +116,23 @@ const createColumns = (
   },
   {
     accessorKey: "last_run_start_date",
-    cell: ({ row: { original } }) =>
-      original.latest_dag_runs[0] ? (
+    cell: ({ row: { original } }) => {
+      const latest = original.latest_dag_runs[0];
+      return latest ? (
         <Link asChild color="fg.info" fontWeight="bold">
-          <RouterLink to={`/dags/${original.dag_id}/runs/${original.latest_dag_runs[0].run_id}`}>
+          <RouterLink to={`/dags/${original.dag_id}/runs/${latest.run_id}`}>
             <DagRunInfo
-              endDate={original.latest_dag_runs[0].end_date}
-              logicalDate={original.latest_dag_runs[0].logical_date}
-              runAfter={original.latest_dag_runs[0].run_after}
-              startDate={original.latest_dag_runs[0].start_date}
-              state={original.latest_dag_runs[0].state}
+              endDate={latest.end_date}
+              isAnomalous={dagRunKeysWithAnomalousTasks.has(`${original.dag_id}::${latest.run_id}`)}
+              logicalDate={latest.logical_date}
+              runAfter={latest.run_after}
+              startDate={latest.start_date}
+              state={latest.state}
             />
           </RouterLink>
         </Link>
-      ) : undefined,
+      ) : undefined;
+    },
     header: () => translate("dagDetails.latestRun"),
   },
   {
@@ -191,12 +196,12 @@ const {
   TAGS_MATCH_MODE,
 }: SearchParamsKeysType = SearchParamsKeys;
 
-const cardDef: CardDef<DAGWithLatestDagRunsResponse> = {
-  card: ({ row }) => <DagCard dag={row} />,
+const createCardDef = (dagRunKeysWithAnomalousTasks: Set<string>): CardDef<DAGWithLatestDagRunsResponse> => ({
+  card: ({ row }) => <DagCard dagRunKeysWithAnomalousTasks={dagRunKeysWithAnomalousTasks} dag={row} />,
   meta: {
     customSkeleton: <Skeleton height="120px" width="100%" />,
   },
-};
+});
 
 const DAGS_LIST_DISPLAY = "dags_list_display";
 
@@ -226,7 +231,23 @@ export const DagsList = () => {
   const [sort] = sorting;
   const orderBy = sort ? `${sort.desc ? "-" : ""}${sort.id}` : "dag_display_name";
 
-  const columns = createColumns(translate);
+  const { data: tiAnomalyData } = useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies(
+    { limit: 2000, offset: 0 },
+    undefined,
+    {
+      refetchInterval: 3000,
+      refetchOnWindowFocus: true,
+    },
+  );
+  /** Latest-run warning icon when any task in that run is anomalous (not dag-run-level anomaly records). */
+  const dagRunKeysWithAnomalousTasks = new Set(
+    (tiAnomalyData?.task_instance_anomalies ?? [])
+      .filter((a) => a.is_anomalous)
+      .map((a) => `${a.dag_id}::${a.run_id}`),
+  );
+
+  const columns = createColumns(translate, dagRunKeysWithAnomalousTasks);
+  const cardDef = createCardDef(dagRunKeysWithAnomalousTasks);
 
   const handleSearchChange = (value: string) => {
     setTableURLState({
