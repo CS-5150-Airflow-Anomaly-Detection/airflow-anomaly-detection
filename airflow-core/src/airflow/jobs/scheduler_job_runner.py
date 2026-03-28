@@ -53,8 +53,6 @@ from airflow import settings
 from airflow._shared.observability.metrics.dual_stats_manager import DualStatsManager
 from airflow._shared.observability.metrics.stats import Stats
 from airflow._shared.timezones import timezone
-from airflow.anomaly_detection.detector import detect_dagrun_anomaly
-from airflow.anomaly_detection.recorder import record_dagrun_anomaly
 from airflow.api_fastapi.execution_api.datamodels.taskinstance import DagRun as DRDataModel, TIRunContext
 from airflow.assets.evaluation import AssetEvaluator
 from airflow.callbacks.callback_requests import (
@@ -2227,14 +2225,6 @@ class SchedulerJobRunner(BaseJobRunner, LoggingMixin):
                 )
             active_runs_of_dags[(dag_run.dag_id, backfill_id)] += 1
             _update_state(dag, dag_run)
-            is_anomalous, detector_name, reason = detect_dagrun_anomaly(dag_run)
-            record_dagrun_anomaly(
-                session=session,
-                dag_run=dag_run,
-                is_anomalous=is_anomalous,
-                detector_name=detector_name,
-                reason=reason,
-            )
             dag_run.notify_dagrun_state_changed(msg="started")
 
     @retry_db_transaction
