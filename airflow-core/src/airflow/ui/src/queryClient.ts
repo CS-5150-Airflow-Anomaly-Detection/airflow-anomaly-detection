@@ -25,11 +25,6 @@ OpenAPI.BASE = document.querySelector("head>base")?.getAttribute("href") ?? "";
 if (OpenAPI.BASE.endsWith("/")) {
   OpenAPI.BASE = OpenAPI.BASE.slice(0, -1);
 }
-// If the UI is served over HTTPS but the `<base>` tag is HTTP,
-// prefer the page's protocol to avoid mixed-content requests.
-if (window.location.protocol === "https:" && OpenAPI.BASE.startsWith("http://")) {
-  OpenAPI.BASE = OpenAPI.BASE.replace(/^http:\/\//, "https://");
-}
 
 const RETRY_COUNT = 3;
 

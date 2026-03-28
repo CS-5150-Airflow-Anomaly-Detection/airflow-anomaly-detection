@@ -1,7 +1,7 @@
 // generated with @7nohe/openapi-react-query-codegen@1.6.2 
 
 import { type QueryClient } from "@tanstack/react-query";
-import { AssetService, AuthLinksService, BackfillService, CalendarService, ConfigService, ConnectionService, DagAnomalyService, DagRunService, DagService, DagSourceService, DagStatsService, DagVersionService, DagWarningService, DashboardService, DependenciesService, EventLogService, ExperimentalService, ExtraLinksService, GanttService, GridService, ImportErrorService, JobService, LoginService, MonitorService, PluginService, PoolService, ProviderService, StructureService, TaskInstanceAnomalyService, TaskInstanceService, TaskService, TeamsService, VariableService, VersionService, XcomService } from "../requests/services.gen";
+import { AssetService, AuthLinksService, BackfillService, CalendarService, ConfigService, ConnectionService, DagRunService, DagService, DagSourceService, DagStatsService, DagVersionService, DagWarningService, DashboardService, DependenciesService, EventLogService, ExperimentalService, ExtraLinksService, GanttService, GridService, ImportErrorService, JobService, LoginService, MonitorService, PluginService, PoolService, ProviderService, StructureService, TaskInstanceAnomalyService, TaskInstanceService, TaskService, TeamsService, VariableService, VersionService, XcomService } from "../requests/services.gen";
 import { DagRunState, DagWarningType } from "../requests/types.gen";
 import * as Common from "./common";
 /**
@@ -1452,21 +1452,6 @@ export const ensureUseDagVersionServiceGetDagVersionsData = (queryClient: QueryC
   orderBy?: string[];
   versionNumber?: number;
 }) => queryClient.ensureQueryData({ queryKey: Common.UseDagVersionServiceGetDagVersionsKeyFn({ bundleName, bundleVersion, dagId, limit, offset, orderBy, versionNumber }), queryFn: () => DagVersionService.getDagVersions({ bundleName, bundleVersion, dagId, limit, offset, orderBy, versionNumber }) });
-/**
-* Get Dag Anomalies
-* Get all DAG anomalies.
-* @param data The data for the request.
-* @param data.dagId
-* @param data.limit
-* @param data.offset
-* @returns DagAnomalyCollectionResponse Successful Response
-* @throws ApiError
-*/
-export const ensureUseDagAnomalyServiceGetDagAnomaliesData = (queryClient: QueryClient, { dagId, limit, offset }: {
-  dagId?: string;
-  limit?: number;
-  offset?: number;
-} = {}) => queryClient.ensureQueryData({ queryKey: Common.UseDagAnomalyServiceGetDagAnomaliesKeyFn({ dagId, limit, offset }), queryFn: () => DagAnomalyService.getDagAnomalies({ dagId, limit, offset }) });
 /**
 * Get Task Instance Anomalies
 * Get all Task Instance anomalies.

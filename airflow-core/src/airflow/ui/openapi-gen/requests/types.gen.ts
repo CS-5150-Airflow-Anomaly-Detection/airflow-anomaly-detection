@@ -774,28 +774,6 @@ export type DAGWarningResponse = {
 };
 
 /**
- * DAG Anomaly Collection serializer for responses.
- */
-export type DagAnomalyCollectionResponse = {
-    dag_anomalies: Array<DagAnomalyResponse>;
-    total_entries: number;
-};
-
-/**
- * DAG Anomaly serializer for responses.
- */
-export type DagAnomalyResponse = {
-    id: number;
-    dag_id: string;
-    run_id: string;
-    is_anomalous: boolean;
-    detector_name: string;
-    reason: string | null;
-    created_at: string;
-    updated_at: string;
-};
-
-/**
  * DagProcessor info serializer for responses.
  */
 export type DagProcessorInfoResponse = {
@@ -3460,14 +3438,6 @@ export type GetDagVersionsData = {
 };
 
 export type GetDagVersionsResponse = DAGVersionCollectionResponse;
-
-export type GetDagAnomaliesData = {
-    dagId?: string | null;
-    limit?: number;
-    offset?: number;
-};
-
-export type GetDagAnomaliesResponse = DagAnomalyCollectionResponse;
 
 export type GetTaskInstanceAnomaliesData = {
     dagId?: string | null;
@@ -6589,29 +6559,6 @@ export type $OpenApiTs = {
                  * Not Found
                  */
                 404: HTTPExceptionResponse;
-                /**
-                 * Validation Error
-                 */
-                422: HTTPValidationError;
-            };
-        };
-    };
-    '/api/v2/dag_anomaly': {
-        get: {
-            req: GetDagAnomaliesData;
-            res: {
-                /**
-                 * Successful Response
-                 */
-                200: DagAnomalyCollectionResponse;
-                /**
-                 * Unauthorized
-                 */
-                401: HTTPExceptionResponse;
-                /**
-                 * Forbidden
-                 */
-                403: HTTPExceptionResponse;
                 /**
                  * Validation Error
                  */

@@ -59,7 +59,7 @@ import { SortSelect } from "./SortSelect";
 
 const createColumns = (
   translate: (key: string, options?: Record<string, unknown>) => string,
-  anomalousDagRunKeys: Set<string>,
+  dagRunKeysWithAnomalousTasks: Set<string>,
 ): Array<ColumnDef<DAGWithLatestDagRunsResponse>> => [
   {
     accessorKey: "is_paused",
@@ -123,7 +123,7 @@ const createColumns = (
           <RouterLink to={`/dags/${original.dag_id}/runs/${latest.run_id}`}>
             <DagRunInfo
               endDate={latest.end_date}
-              isAnomalous={anomalousDagRunKeys.has(`${original.dag_id}::${latest.run_id}`)}
+              isAnomalous={dagRunKeysWithAnomalousTasks.has(`${original.dag_id}::${latest.run_id}`)}
               logicalDate={latest.logical_date}
               runAfter={latest.run_after}
               startDate={latest.start_date}
@@ -196,8 +196,8 @@ const {
   TAGS_MATCH_MODE,
 }: SearchParamsKeysType = SearchParamsKeys;
 
-const createCardDef = (anomalousDagRunKeys: Set<string>): CardDef<DAGWithLatestDagRunsResponse> => ({
-  card: ({ row }) => <DagCard anomalousDagRunKeys={anomalousDagRunKeys} dag={row} />,
+const createCardDef = (dagRunKeysWithAnomalousTasks: Set<string>): CardDef<DAGWithLatestDagRunsResponse> => ({
+  card: ({ row }) => <DagCard dagRunKeysWithAnomalousTasks={dagRunKeysWithAnomalousTasks} dag={row} />,
   meta: {
     customSkeleton: <Skeleton height="120px" width="100%" />,
   },
@@ -239,14 +239,15 @@ export const DagsList = () => {
       refetchOnWindowFocus: true,
     },
   );
-  const anomalousDagRunKeys = new Set(
+  /** Latest-run warning icon when any task in that run is anomalous (not dag-run-level anomaly records). */
+  const dagRunKeysWithAnomalousTasks = new Set(
     (tiAnomalyData?.task_instance_anomalies ?? [])
       .filter((a) => a.is_anomalous)
       .map((a) => `${a.dag_id}::${a.run_id}`),
   );
 
-  const columns = createColumns(translate, anomalousDagRunKeys);
-  const cardDef = createCardDef(anomalousDagRunKeys);
+  const columns = createColumns(translate, dagRunKeysWithAnomalousTasks);
+  const cardDef = createCardDef(dagRunKeysWithAnomalousTasks);
 
   const handleSearchChange = (value: string) => {
     setTableURLState({
