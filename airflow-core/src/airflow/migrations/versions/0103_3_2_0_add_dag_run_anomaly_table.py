@@ -62,4 +62,4 @@ def upgrade():
 
 def downgrade():
     """Drop dag_run_anomaly table."""
-    op.drop_table("dag_run_anomaly")
+    op.drop_table("dag_run_anomaly", if_exists=True)
