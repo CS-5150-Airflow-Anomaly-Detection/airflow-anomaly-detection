@@ -72,6 +72,10 @@ jobs:
         uses: ./.github/actions/breeze
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+      - name: "Install backend system dependencies"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libkrb5-dev
       - name: "Run targeted backend tests"
         run: >
           uv run --group dev pytest --with-db-init
