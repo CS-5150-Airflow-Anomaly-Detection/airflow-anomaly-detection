@@ -33,11 +33,13 @@ const isTaskCellAnomalous = (keys: Set<string>, runId: string, taskId: string) =
     return true;
   }
   const prefix = `${runId}::${taskId}::`;
-  for (const k of keys) {
-    if (k.startsWith(prefix)) {
+
+  for (const key of keys) {
+    if (key.startsWith(prefix)) {
       return true;
     }
   }
+
   return false;
 };
 
@@ -47,15 +49,18 @@ const getDetectorForCell = (
   taskId: string,
 ): string | undefined => {
   const exact = `${runId}::${taskId}::-1`;
+
   if (detectors.has(exact)) {
     return detectors.get(exact);
   }
   const prefix = `${runId}::${taskId}::`;
-  for (const [k, name] of detectors) {
-    if (k.startsWith(prefix)) {
+
+  for (const [key, name] of detectors) {
+    if (key.startsWith(prefix)) {
       return name;
     }
   }
+
   return undefined;
 };
 

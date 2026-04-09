@@ -36,12 +36,17 @@ import { RecentRuns } from "./RecentRuns";
 import { Schedule } from "./Schedule";
 
 type Props = {
+  readonly dag: DAGWithLatestDagRunsResponse;
   /** `dag_id::run_id` for runs that have at least one anomalous task (from task-instance anomalies). */
   readonly dagRunKeysWithAnomalousTasks?: Set<string>;
-  readonly dag: DAGWithLatestDagRunsResponse;
 };
 
-export const DagCard = ({ dagRunKeysWithAnomalousTasks = new Set(), dag }: Props) => {
+const EMPTY_DAG_RUN_KEYS_WITH_ANOMALOUS_TASKS = new Set<string>();
+
+export const DagCard = ({
+  dag,
+  dagRunKeysWithAnomalousTasks = EMPTY_DAG_RUN_KEYS_WITH_ANOMALOUS_TASKS,
+}: Props) => {
   const { t: translate } = useTranslation(["common", "dag"]);
   const [latestRun] = dag.latest_dag_runs;
 

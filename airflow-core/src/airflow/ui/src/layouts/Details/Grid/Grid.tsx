@@ -25,8 +25,8 @@ import { useTranslation } from "react-i18next";
 import { FiChevronsRight } from "react-icons/fi";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
-import type { DagRunState, DagRunType, GridRunsResponse } from "openapi/requests";
 import { useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies } from "openapi/queries";
+import type { DagRunState, DagRunType, GridRunsResponse } from "openapi/requests";
 import { useOpenGroups } from "src/context/openGroups";
 import { NavigationModes, useNavigation } from "src/hooks/navigation";
 import { useGridRuns } from "src/queries/useGridRuns.ts";
@@ -112,14 +112,20 @@ export const Grid = ({ dagRunState, limit, runType, showGantt, triggeringUser }:
     },
   );
   const anomalousRows = (tiAnomalyData?.task_instance_anomalies ?? []).filter(
-    (a) => a.dag_id === dagId && a.is_anomalous,
+    (anomalousRow) => anomalousRow.dag_id === dagId && anomalousRow.is_anomalous,
   );
   const anomalousCellKeys = new Set(
-    anomalousRows.map((a) => `${a.run_id}::${a.task_id}::${a.map_index}`),
+    anomalousRows.map(
+      (anomalousRow) => `${anomalousRow.run_id}::${anomalousRow.task_id}::${anomalousRow.map_index}`,
+    ),
   );
   const anomalousDetectorByCellKey = new Map<string, string>();
-  for (const a of anomalousRows) {
-    anomalousDetectorByCellKey.set(`${a.run_id}::${a.task_id}::${a.map_index}`, a.detector_name);
+
+  for (const anomalousRow of anomalousRows) {
+    anomalousDetectorByCellKey.set(
+      `${anomalousRow.run_id}::${anomalousRow.task_id}::${anomalousRow.map_index}`,
+      anomalousRow.detector_name,
+    );
   }
 
   // calculate dag run bar heights relative to max
@@ -223,9 +229,9 @@ export const Grid = ({ dagRunState, limit, runType, showGantt, triggeringUser }:
           <Flex flexDirection="row-reverse" flexShrink={0}>
             {gridRuns?.map((dr: GridRunsResponse) => (
               <TaskInstancesColumn
-                key={dr.run_id}
                 anomalousCellKeys={anomalousCellKeys}
                 anomalousDetectorByCellKey={anomalousDetectorByCellKey}
+                key={dr.run_id}
                 nodes={flatNodes}
                 onCellClick={handleCellClick}
                 run={dr}
