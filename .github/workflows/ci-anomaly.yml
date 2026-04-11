@@ -56,8 +56,18 @@ jobs:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
           platform: ${{ env.PLATFORM }}
           save-cache: true
-      - name: "Run prek"
-        run: prek --all-files
+      - name: "Static checks (Prek)"
+        run: prek --all-files --show-diff-on-failure --color always
+        env:
+          VERBOSE: "true"
+          SKIP: ${{ inputs.skip-prek-hooks }}
+          COLUMNS: "202"
+          SKIP_GROUP_OUTPUT: "true"
+          DEFAULT_BRANCH: ${{ inputs.branch }}
+          RUFF_FORMAT: "github"
+      - name: "Show prek log on failure"
+        run: cat ~/.cache/prek/prek.log || true
+        if: failure()
 
   backend-tests:
     name: Backend tests
