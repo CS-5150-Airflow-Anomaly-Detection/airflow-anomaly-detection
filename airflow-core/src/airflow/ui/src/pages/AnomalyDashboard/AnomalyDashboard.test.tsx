@@ -18,39 +18,78 @@
  */
 import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
+import i18n from "i18next";
 import type { PropsWithChildren } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { I18nextProvider, initReactI18next } from "react-i18next";
+import { beforeAll, describe, expect, it } from "vitest";
 
 import { BaseWrapper } from "src/utils/Wrapper";
 
 import { AnomalyDashboard } from "./AnomalyDashboard";
 
-vi.mock("react-i18next", () => ({
-  useTranslation: () => ({
-    input: (key: string, options?: { count?: number }) => {
-      if (key === "dashboard:anomalies.durationSeconds" && options && "count" in options) {
-        return `${String(options.count)}s`;
-      }
-
-      return key;
+beforeAll(async () => {
+  // Keep this test fully local: don't import `src/i18n/config` (it uses http-backend).
+  await i18n.use(initReactI18next).init({
+    defaultNS: "dashboard",
+    fallbackLng: "en",
+    interpolation: { escapeValue: false },
+    lng: "en",
+    ns: ["common", "dashboard"],
+    resources: {
+      en: {
+        common: {
+          dagId: "DAG ID",
+          duration: "Duration",
+          runId: "Run ID",
+          task: "Task",
+        },
+        dashboard: {
+          anomalies: {
+            columns: {
+              detected: "Detected",
+              expectedRange: "Expected range",
+              type: "Type",
+            },
+            description: "Anomaly dashboard description",
+            // Included for completeness if table rows are added later.
+            durationSeconds: "{{count}}s",
+            empty: "No anomalies found",
+            recent: "Recent anomalies",
+            stats: {
+              algorithm: "Algorithm",
+              last24h: "Last 24h",
+              tasksMonitored: "Tasks monitored",
+            },
+            title: "Anomalies",
+            types: {
+              fast: "Fast",
+              slow: "Slow",
+            },
+          },
+        },
+      },
     },
-  }),
-}));
+  });
+});
 
-const Wrapper = ({ children }: PropsWithChildren) => <BaseWrapper>{children}</BaseWrapper>;
+const Wrapper = ({ children }: PropsWithChildren) => (
+  <BaseWrapper>
+    <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
+  </BaseWrapper>
+);
 
 describe("AnomalyDashboard", () => {
   it("renders header, stat cards, and empty recent-anomalies table", () => {
     render(<AnomalyDashboard />, { wrapper: Wrapper });
 
-    expect(screen.getByText("dashboard:anomalies.title")).toBeInTheDocument();
-    expect(screen.getByText("dashboard:anomalies.description")).toBeInTheDocument();
-    expect(screen.getByText("dashboard:anomalies.stats.last24h")).toBeInTheDocument();
-    expect(screen.getByText("dashboard:anomalies.stats.tasksMonitored")).toBeInTheDocument();
-    expect(screen.getByText("dashboard:anomalies.stats.algorithm")).toBeInTheDocument();
+    expect(screen.getByText("Anomalies")).toBeInTheDocument();
+    expect(screen.getByText("Anomaly dashboard description")).toBeInTheDocument();
+    expect(screen.getByText("Last 24h")).toBeInTheDocument();
+    expect(screen.getByText("Tasks monitored")).toBeInTheDocument();
+    expect(screen.getByText("Algorithm")).toBeInTheDocument();
     expect(screen.getAllByText("0")).toHaveLength(2);
     expect(screen.getByText("—")).toBeInTheDocument();
-    expect(screen.getByText("dashboard:anomalies.recent")).toBeInTheDocument();
-    expect(screen.getByText("dashboard:anomalies.empty")).toBeInTheDocument();
+    expect(screen.getByText("Recent anomalies")).toBeInTheDocument();
+    expect(screen.getByText("No anomalies found")).toBeInTheDocument();
   });
 });
