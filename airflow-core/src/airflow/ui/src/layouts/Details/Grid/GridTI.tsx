@@ -104,7 +104,7 @@ export const GridTI = ({
             {instance.state
               ? translate(`common:states.${instance.state}`)
               : translate("common:states.no_status")}
-            {isAnomalous && (
+            {isAnomalous ? (
               <>
                 <br />
                 {translate("anomalyDetected", "Performance anomaly detected")}
@@ -115,7 +115,7 @@ export const GridTI = ({
                   </>
                 )}
               </>
-            )}
+            ) : undefined}
           </>
         }
       >
@@ -128,13 +128,7 @@ export const GridTI = ({
             search: redirectionSearch,
           }}
         >
-          <Flex
-            alignItems="center"
-            height="14px"
-            justifyContent="center"
-            position="relative"
-            width="14px"
-          >
+          <Flex alignItems="center" height="14px" justifyContent="center" position="relative" width="14px">
             <Badge
               alignItems="center"
               borderRadius={4}

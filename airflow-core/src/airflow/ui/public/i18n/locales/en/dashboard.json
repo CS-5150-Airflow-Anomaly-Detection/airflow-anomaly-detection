@@ -1,4 +1,26 @@
 {
+  "anomalies": {
+    "columns": {
+      "detected": "Detected",
+      "expectedRange": "Expected range",
+      "type": "Type"
+    },
+    "description": "Detect tasks that ran significantly faster or slower than their historical baseline. Data will appear here once the anomaly detection backend is connected.",
+    "durationSeconds_one": "{{count}}s",
+    "durationSeconds_other": "{{count}}s",
+    "empty": "No anomalies detected yet. Run DAGs and enable anomaly detection to see results here.",
+    "recent": "Recent anomalies",
+    "stats": {
+      "algorithm": "Detection algorithm",
+      "last24h": "Anomalies (last 24h)",
+      "tasksMonitored": "Tasks monitored"
+    },
+    "title": "Task Performance Anomalies",
+    "types": {
+      "fast": "fast",
+      "slow": "slow"
+    }
+  },
   "favorite": {
     "favoriteDags_one": "First {{count}} favorite Dag",
     "favoriteDags_other": "First {{count}} favorite Dags",
