@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import math
+import statistics
 from typing import Any
 
 import structlog
@@ -27,7 +28,9 @@ __all__ = [
     "AlwaysAnomaly",
     "AnomalyDetector",
     "AnomalyResult",
+    "MovingAverageAnomaly",
     "ThresholdAnomaly",
+    "ZScoreAnomaly",
 ]
 
 
@@ -104,6 +107,160 @@ class ThresholdAnomaly:
         )
 
 
+class ZScoreAnomaly:
+    """
+    Anomaly type: if the latest runtime is more than z_threshold stddev from the historical mean, flag an anomaly.
+
+    Constraints:
+    * Requires min_runs > 2.
+    """
+
+    def __init__(self, z_threshold=3.0):
+        """
+        Initialize the anomaly type threshold in standard deviations from the historical mean.
+
+        Parameters
+        ----------
+        z_threshold
+            Number of standard deviations the latest runtime may differ from the
+            historical mean before being flagged as anomalous.
+        """
+        self.z_threshold = z_threshold
+
+    def __call__(self, runtimes):
+        historical_runtimes = runtimes[:-1]
+        cur_runtime = runtimes[-1]
+        details = {
+            "current_runtime": cur_runtime,
+            "historical_run_count": len(historical_runtimes),
+            "z_threshold": self.z_threshold,
+        }
+
+        if len(historical_runtimes) < 2:
+            details["required_historical_run_count"] = 2
+            return AnomalyResult(
+                False,
+                "Not enough historical runtimes to calculate standard deviation.",
+                details=details,
+            )
+
+        mean = statistics.mean(historical_runtimes)
+        stddev = statistics.stdev(historical_runtimes)
+        details["historical_mean"] = mean
+        details["historical_stddev"] = stddev
+
+        if stddev == 0:
+            is_anomaly = cur_runtime != mean
+            message = (
+                f"Latest runtime {cur_runtime:.2f}s differs from the constant historical mean {mean:.2f}s."
+                if is_anomaly
+                else "Latest runtime matches the constant historical mean."
+            )
+            return AnomalyResult(
+                is_anomaly,
+                message,
+                details=details,
+            )
+
+        z_score = abs(cur_runtime - mean) / stddev
+        details["z_score"] = z_score
+        if z_score <= self.z_threshold:
+            return AnomalyResult(
+                False,
+                "Latest runtime is within the z-score threshold.",
+                details=details,
+            )
+
+        return AnomalyResult(
+            True,
+            f"Latest runtime {cur_runtime:.2f}s is {z_score:.2f} standard deviations from "
+            f"the historical mean {mean:.2f}s.",
+            details=details,
+        )
+
+
+class MovingAverageAnomaly:
+    """
+    Anomaly type: if the latest runtime deviates from a rolling mean by more than the configured bounds.
+
+    Constraints:
+    * Requires min_runs > 1.
+    """
+
+    def __init__(self, window_size=5, min_ratio=0.5, max_ratio=1.5):
+        """
+        Initialize the anomaly type rolling window and allowed deviation range from the moving average.
+
+        Parameters
+        ----------
+        window_size
+            Number of most recent historical runtimes used to compute the
+            moving-average baseline.
+        min_ratio
+            Lower bound multiplier applied to the moving-average baseline.
+        max_ratio
+            Upper bound multiplier applied to the moving-average baseline.
+        """
+        self.window_size = window_size
+        self.min_ratio = min_ratio
+        self.max_ratio = max_ratio
+
+    def __call__(self, runtimes):
+        historical_runtimes = runtimes[:-1]
+        cur_runtime = runtimes[-1]
+        details = {
+            "current_runtime": cur_runtime,
+            "historical_run_count": len(historical_runtimes),
+            "window_size": self.window_size,
+            "min_ratio": self.min_ratio,
+            "max_ratio": self.max_ratio,
+        }
+
+        if not historical_runtimes:
+            return AnomalyResult(
+                False,
+                "Not enough historical runtimes to calculate a moving average.",
+                details=details,
+            )
+
+        window = historical_runtimes[-self.window_size :]
+        moving_average = statistics.mean(window)
+        details["window_size"] = len(window)
+        details["moving_average"] = moving_average
+
+        if moving_average == 0:
+            is_anomaly = cur_runtime != 0
+            message = (
+                f"Latest runtime {cur_runtime:.2f}s differs from the zero moving-average baseline."
+                if is_anomaly
+                else "Latest runtime matches the zero moving-average baseline."
+            )
+            return AnomalyResult(
+                is_anomaly,
+                message,
+                details=details,
+            )
+
+        min_runtime = moving_average * self.min_ratio
+        max_runtime = moving_average * self.max_ratio
+        details["min_runtime"] = min_runtime
+        details["max_runtime"] = max_runtime
+
+        if cur_runtime >= min_runtime and cur_runtime <= max_runtime:
+            return AnomalyResult(
+                False,
+                "Latest runtime is within the moving-average range.",
+                details=details,
+            )
+
+        return AnomalyResult(
+            True,
+            f"Latest runtime {cur_runtime:.2f}s is outside the moving-average range "
+            f"[{min_runtime:.2f}s, {max_runtime:.2f}s] computed from the last {len(window)} runs.",
+            details=details,
+        )
+
+
 class AnomalyDetector:
     """
     Base class for anomaly detection strategies.
@@ -118,17 +275,25 @@ class AnomalyDetector:
         Parameters
         ----------
         min_runs : int
-            Minimum number of historical runs required before
-            anomaly detection is attempted.
+            Minimum number of runtimes required before anomaly detection is
+            attempted, including historical runs and the current runtime being
+            evaluated. Requires min_runs >= 1.
 
         max_runs : int
             Maximum number of historical runs to consider.
-            Older runs should be discarded.
+            Older runs should be discarded. Requires max_runs >= 1 and max_runs >= min_runs.
 
         algorithm : callable object/function
             Must implement algorithm(runtimes) -> AnomalyResult
             returning an AnomalyResult showing whether an anomaly was detected for the last runtime, and associated information.
         """
+        if min_runs < 1:
+            raise ValueError("min_runs must be at least 1")
+        if max_runs < 1:
+            raise ValueError("max_runs must be at least 1")
+        if max_runs < min_runs:
+            raise ValueError("max_runs must be greater than or equal to min_runs")
+
         self.min_runs = min_runs
         self.max_runs = max_runs
         self.algorithm = algorithm or AlwaysAnomaly()

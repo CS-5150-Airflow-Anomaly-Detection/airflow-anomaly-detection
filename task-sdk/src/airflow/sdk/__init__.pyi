@@ -40,7 +40,9 @@ from airflow.sdk.definitions.anomaly_detection import (
     AlwaysAnomaly as AlwaysAnomaly,
     AnomalyDetector as AnomalyDetector,
     AnomalyResult as AnomalyResult,
+    MovingAverageAnomaly as MovingAverageAnomaly,
     ThresholdAnomaly as ThresholdAnomaly,
+    ZScoreAnomaly as ZScoreAnomaly,
 )
 from airflow.sdk.definitions.asset import (
     Asset as Asset,
@@ -94,6 +96,7 @@ __all__ = [
     "AlwaysAnomaly",
     "AnomalyDetector",
     "AnomalyResult",
+    "MovingAverageAnomaly",
     "Asset",
     "AssetAlias",
     "AssetAll",
@@ -130,6 +133,7 @@ __all__ = [
     "TaskGroup",
     "TaskInstanceState",
     "ThresholdAnomaly",
+    "ZScoreAnomaly",
     "TriggerRule",
     "Variable",
     "WeightRule",
