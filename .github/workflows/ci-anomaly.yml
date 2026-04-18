@@ -86,6 +86,25 @@ jobs:
         run: >
           breeze testing core-tests --db-reset
           airflow-core/tests/unit/api_fastapi/core_api/routes/ui
+          airflow-core/tests/unit/api_fastapi/core_api/routes/public/test_task_instance_anomaly.py
+
+  task-sdk-tests:
+    name: Task SDK tests
+    runs-on: ["ubuntu-24.04"]
+    timeout-minutes: 30
+    steps:
+      - name: "Checkout ${{ github.ref }} ( ${{ github.sha }} )"
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          persist-credentials: false
+      - name: "Install Breeze"
+        uses: ./.github/actions/breeze
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+      - name: "Run task SDK tests"
+        run: >
+          breeze testing task-sdk-tests
+          task-sdk/tests/task_sdk/definitions/test_anomaly_detection.py
 
   ui-tests:
     name: UI tests
