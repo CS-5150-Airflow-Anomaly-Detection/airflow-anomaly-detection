@@ -240,6 +240,9 @@
   "taskGroup": "Task Group",
   "taskId": "Task ID",
   "taskInstance": {
+    "anomalyBadge": "Anomaly",
+    "anomalyBadgeAria": "Anomaly",
+    "anomalyClickToSeeLogs": "Click to see logs",
     "dagVersion": "Dag Version",
     "executor": "Executor",
     "executorConfig": "Executor Config",
@@ -264,6 +267,17 @@
   },
   "taskInstance_one": "Task Instance",
   "taskInstance_other": "Task Instances",
+  "taskAnomalies": {
+    "anomalyAlgorithm": "Anomaly Algorithm",
+    "anomalyAlgResult": "Anomaly Alg Result",
+    "detectedCount": "{{count}} Task Anomalies Detected",
+    "historicEqualMapIndex": "Use Historic Runs w/ Equal Map Index",
+    "historicEqualMapIndexNo": "No",
+    "historicEqualMapIndexYes": "Yes",
+    "historicRunsUsed": "Historic Runs Used"
+  },
+  "taskAnomaly_one": "Task Anomaly",
+  "taskAnomaly_other": "Task Anomalies",
   "timeRange": {
     "last12Hours": "Last 12 Hours",
     "last24Hours": "Last 24 Hours",

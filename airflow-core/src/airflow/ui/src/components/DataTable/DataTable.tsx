@@ -55,8 +55,10 @@ type DataTableProps<TData> = {
   readonly onDisplayToggleChange?: (mode: "card" | "table") => void;
   readonly onStateChange?: (state: TableState) => void;
   readonly renderSubComponent?: (props: { row: Row<TData> }) => React.ReactElement;
+  readonly rowCountHeadingRender?: (total: number) => ReactNode;
   readonly showDisplayToggle?: boolean;
   readonly showRowCountHeading?: boolean;
+  readonly showTableWhenEmpty?: boolean;
   readonly skeletonCount?: number;
   readonly total?: number;
 };
@@ -78,8 +80,10 @@ export const DataTable = <TData,>({
   noRowsMessage,
   onDisplayToggleChange,
   onStateChange,
+  rowCountHeadingRender,
   showDisplayToggle,
   showRowCountHeading = true,
+  showTableWhenEmpty = false,
   skeletonCount = 10,
   total = 0,
 }: DataTableProps<TData>) => {
@@ -146,6 +150,8 @@ export const DataTable = <TData,>({
 
   const display = displayMode === "card" && Boolean(cardDef) ? "card" : "table";
   const hasRows = rows.length > 0;
+  const showTable =
+    display === "table" && (hasRows || (Boolean(showTableWhenEmpty) && !Boolean(isLoading)));
   const hasPagination = initialState?.pagination !== undefined && (pageIndex !== 0 || rows.length !== total);
 
   // Default to show columns filter only if there are actually many columns displayed
@@ -156,13 +162,18 @@ export const DataTable = <TData,>({
     [modelName, translate],
   );
   const showRowCount = Boolean(
-    showRowCountHeading && !Boolean(isLoading) && !Boolean(isFetching) && total > 0,
+    showRowCountHeading &&
+      !Boolean(isLoading) &&
+      !Boolean(isFetching) &&
+      (rowCountHeadingRender === undefined ? total > 0 : true),
   );
   const noRowsModelName = translateModelName(0);
 
   const rowCountHeading = showRowCount ? (
     <Heading py={3} size="md">
-      {`${total} ${translateModelName(total)}`}
+      {rowCountHeadingRender === undefined
+        ? `${total} ${translateModelName(total)}`
+        : rowCountHeadingRender(total)}
     </Heading>
   ) : undefined;
 
@@ -175,13 +186,11 @@ export const DataTable = <TData,>({
       <Toaster />
       {errorMessage}
       {rowCountHeading}
-      {hasRows && display === "table" ? (
-        <TableList allowFiltering={showColumnsFilter} table={table} />
-      ) : undefined}
+      {showTable ? <TableList allowFiltering={showColumnsFilter} table={table} /> : undefined}
       {hasRows && display === "card" && cardDef !== undefined ? (
         <CardList cardDef={cardDef} isLoading={isLoading} rows={rows} />
       ) : undefined}
-      {!hasRows && !Boolean(isLoading) && (
+      {!hasRows && !Boolean(isLoading) && !showTableWhenEmpty && (
         <Text as="div" pl={4} pt={1}>
           {noRowsMessage ?? translate("noItemsFound", { modelName: noRowsModelName })}
         </Text>

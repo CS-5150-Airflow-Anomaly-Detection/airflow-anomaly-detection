@@ -21,13 +21,14 @@ import {
   Box,
   Flex,
   Heading,
+  Link,
   Skeleton,
   Table,
   Text,
   VStack,
 } from "@chakra-ui/react";
 import { FiAlertTriangle } from "react-icons/fi";
-import { useParams } from "react-router-dom";
+import { Link as RouterLink, useParams } from "react-router-dom";
 
 import {
   useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies,
@@ -40,7 +41,6 @@ import { flattenNodes } from "src/layouts/Details/Grid/utils";
 
 import type { TaskInstanceAnomalyResponse } from "openapi/requests/types.gen";
 
-/** When the API omits `reason`, show a human-readable line derived from `detector_name` (UI-only). */
 const getTaskAnomalyReasonDisplay = (anomaly: TaskInstanceAnomalyResponse): string => {
   const trimmed = anomaly.reason?.trim();
 
@@ -172,10 +172,22 @@ export const Anomalies = () => {
                       anomaliesByTime[anomaliesByTime.length - 1] ?? null;
                     const isAnomalous = latestAnomaly?.is_anomalous ?? false;
 
+                    const taskLabel = task.task_display_name ?? task.task_id ?? "—";
+                    const taskAnomaliesPath =
+                      taskId === ""
+                        ? undefined
+                        : `/dags/${dagId}/tasks/${encodeURIComponent(taskId)}/task_anomalies`;
+
                     return (
                       <Table.Row key={task.task_id ?? task.task_display_name ?? ""}>
                         <Table.Cell>
-                          {task.task_display_name ?? task.task_id ?? "—"}
+                          {taskAnomaliesPath === undefined ? (
+                            taskLabel
+                          ) : (
+                            <Link asChild color="fg.info" fontWeight="bold">
+                              <RouterLink to={taskAnomaliesPath}>{taskLabel}</RouterLink>
+                            </Link>
+                          )}
                         </Table.Cell>
                         <Table.Cell>
                           {firstAnomaly ? (

@@ -170,6 +170,7 @@
     "requiredActions": "Required Actions",
     "runs": "Runs",
     "taskInstances": "Task Instances",
+    "taskAnomalies": "Task Anomalies",
     "tasks": "Tasks",
     "xcom": "XCom"
   },

@@ -18,14 +18,15 @@
  */
 
 /* eslint-disable max-lines */
-import { Flex, Link } from "@chakra-ui/react";
+import { Flex, HStack, Link } from "@chakra-ui/react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink, useParams, useSearchParams } from "react-router-dom";
 
-import { useTaskInstanceServiceGetTaskInstances } from "openapi/queries";
-import type { TaskInstanceResponse } from "openapi/requests/types.gen";
+import { useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies, useTaskInstanceServiceGetTaskInstances } from "openapi/queries";
+import type { TaskInstanceAnomalyResponse, TaskInstanceResponse } from "openapi/requests/types.gen";
 import { ClearTaskInstanceButton } from "src/components/Clear";
 import { DagVersion } from "src/components/DagVersion";
 import { DataTable } from "src/components/DataTable";
@@ -33,6 +34,7 @@ import { useTableURLState } from "src/components/DataTable/useTableUrlState";
 import { ErrorAlert } from "src/components/ErrorAlert";
 import { MarkTaskInstanceAsButton } from "src/components/MarkAs";
 import { StateBadge } from "src/components/StateBadge";
+import { TaskInstanceAnomalyIndicator } from "src/components/TaskInstanceAnomalyIndicator";
 import Time from "src/components/Time";
 import { TruncatedText } from "src/components/TruncatedText";
 import { SearchParamsKeys, type SearchParamsKeysType } from "src/constants/searchParams";
@@ -63,12 +65,32 @@ const {
   TRY_NUMBER: TRY_NUMBER_PARAM,
 }: SearchParamsKeysType = SearchParamsKeys;
 
+const buildAnomalousTaskInstanceKeyMap = (
+  rows: Array<TaskInstanceAnomalyResponse> | undefined,
+): Map<string, TaskInstanceAnomalyResponse> => {
+  const anomalyByKey = new Map<string, TaskInstanceAnomalyResponse>();
+
+  if (rows === undefined) {
+    return anomalyByKey;
+  }
+
+  for (const row of rows) {
+    if (row.is_anomalous) {
+      anomalyByKey.set(`${row.run_id}::${row.task_id}::${row.map_index}::${row.try_number}`, row);
+    }
+  }
+
+  return anomalyByKey;
+};
+
 const taskInstanceColumns = ({
+  anomalyByTiKey,
   dagId,
   runId,
   taskId,
   translate,
 }: {
+  anomalyByTiKey?: Map<string, TaskInstanceAnomalyResponse>;
   dagId?: string;
   runId?: string;
   taskId?: string;
@@ -131,15 +153,28 @@ const taskInstanceColumns = ({
   },
   {
     accessorKey: "state",
-    cell: ({
-      row: {
-        original: { state },
-      },
-    }) => (
-      <StateBadge state={state}>
-        {state ? translate(`common:states.${state}`) : translate("common:states.no_status")}
-      </StateBadge>
-    ),
+    cell: ({ row: { original } }) => {
+      const {
+        dag_run_id: dagRunId,
+        map_index: mapIndex,
+        state,
+        task_id: taskIdTi,
+        try_number: tryNum,
+      } = original;
+      const key = `${dagRunId}::${taskIdTi}::${mapIndex}::${tryNum}`;
+      const anomaly = anomalyByTiKey?.get(key);
+
+      return (
+        <HStack alignItems="center" flexWrap="wrap" gap={1}>
+          <StateBadge state={state}>
+            {state ? translate(`common:states.${state}`) : translate("common:states.no_status")}
+          </StateBadge>
+          {Boolean(anomaly?.is_anomalous) && (
+            <TaskInstanceAnomalyIndicator logsTo={getTaskInstanceLink(original)} />
+          )}
+        </HStack>
+      );
+    },
     header: () => translate("state"),
   },
   {
@@ -257,6 +292,28 @@ export const TaskInstances = () => {
 
   const refetchInterval = useAutoRefresh({});
 
+  const shouldFetchTiAnomalies =
+    dagId !== undefined && dagId !== "" && dagId !== "~";
+  const { data: tiAnomalyPayload } = useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies(
+    {
+      dagId: shouldFetchTiAnomalies ? dagId : undefined,
+      limit: 5000,
+      offset: 0,
+      runId:
+        runId !== undefined && runId !== "" && runId !== "~" ? runId : undefined,
+    },
+    undefined,
+    {
+      enabled: shouldFetchTiAnomalies,
+      refetchInterval: 5000,
+    },
+  );
+
+  const anomalyByTiKey = useMemo(
+    () => buildAnomalousTaskInstanceKeyMap(tiAnomalyPayload?.task_instance_anomalies),
+    [tiAnomalyPayload?.task_instance_anomalies],
+  );
+
   const { data, error, isLoading } = useTaskInstanceServiceGetTaskInstances(
     {
       dagId: dagId ?? "~",
@@ -293,6 +350,7 @@ export const TaskInstances = () => {
   );
 
   const columns = taskInstanceColumns({
+    anomalyByTiKey: shouldFetchTiAnomalies ? anomalyByTiKey : undefined,
     dagId,
     runId,
     taskId: Boolean(groupId) ? undefined : taskId,

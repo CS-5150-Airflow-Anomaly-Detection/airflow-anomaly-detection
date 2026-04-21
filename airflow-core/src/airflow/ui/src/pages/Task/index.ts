@@ -17,4 +17,6 @@
  * under the License.
  */
 
+export * from "./Overview";
 export * from "./Task";
+export * from "./TaskAnomalies";
