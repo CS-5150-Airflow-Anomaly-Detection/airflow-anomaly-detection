@@ -104,7 +104,7 @@ jobs:
           breeze testing core-tests --db-reset --enable-coverage -- \
             airflow-core/tests/unit/api_fastapi/core_api/routes/ui \
             airflow-core/tests/unit/api_fastapi/core_api/routes/public/test_task_instance_anomaly.py \
-            --cov-config=anomaly-backend-coverage.toml \
+            --cov-config=/opt/airflow/anomaly-backend-coverage.toml \
             --cov-report=html:coverage/backend-anomaly-html \
             --cov-report=term-missing
       - name: "Upload scoped backend coverage (HTML)"
@@ -145,7 +145,7 @@ jobs:
           echo "Wrote coverage config: $(realpath anomaly-task-sdk-coverage.toml)"
           breeze testing task-sdk-tests --enable-coverage -- \
             task-sdk/tests/task_sdk/definitions/test_anomaly_detection.py \
-            --cov-config=anomaly-task-sdk-coverage.toml \
+            --cov-config=/opt/airflow/anomaly-task-sdk-coverage.toml \
             --cov-report=html:coverage/task-sdk-anomaly-html \
             --cov-report=term-missing
       - name: "Upload scoped Task SDK coverage (HTML)"
