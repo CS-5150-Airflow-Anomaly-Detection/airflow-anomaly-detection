@@ -63,6 +63,8 @@ export const TableList = <TData,>({ allowFiltering, renderSubComponent, table }:
                         aria-label={translate("sort")}
                         disabled={!canSort}
                         onClick={column.getToggleSortingHandler()}
+                        px={0}
+                        py={0}
                         variant="plain"
                       >
                         {text}
