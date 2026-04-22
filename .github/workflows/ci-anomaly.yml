@@ -82,15 +82,14 @@ jobs:
         uses: ./.github/actions/breeze
         with:
           python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-      # --enable-coverage adds --cov=airflow; the generated TOML limits tracing via [run] include.
+      # --enable-coverage adds --cov=airflow and --cov-config=pyproject.toml; the extra --cov-config
+      # points at an easy-to-remove file under `.github/anomaly-ci/` which scopes tracing via [run] include.
       - name: "Run targeted backend tests (with scoped coverage)"
         run: |
           breeze testing core-tests --db-reset --enable-coverage -- \
             airflow-core/tests/unit/api_fastapi/core_api/routes/ui \
             airflow-core/tests/unit/api_fastapi/core_api/routes/public/test_task_instance_anomaly.py \
-            --cov=airflow.models.task_instance_anomaly \
-            --cov=airflow.api_fastapi.core_api.routes.public.task_instance_anomaly \
-            --cov=airflow.api_fastapi.core_api.datamodels.task_instance_anomaly \
+            --cov-config=.github/anomaly-ci/backend-coverage.toml \
             --cov-report=html:coverage/backend-anomaly-html \
             --cov-report=term-missing
       - name: "Upload scoped backend coverage (HTML)"
@@ -118,7 +117,7 @@ jobs:
         run: |
           breeze testing task-sdk-tests --enable-coverage -- \
             task-sdk/tests/task_sdk/definitions/test_anomaly_detection.py \
-            --cov=airflow.sdk.definitions.anomaly_detection \
+            --cov-config=.github/anomaly-ci/task-sdk-coverage.toml \
             --cov-report=html:coverage/task-sdk-anomaly-html \
             --cov-report=term-missing
       - name: "Upload scoped Task SDK coverage (HTML)"

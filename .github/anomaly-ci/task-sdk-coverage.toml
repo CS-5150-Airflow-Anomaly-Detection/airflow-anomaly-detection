@@ -1,0 +1,23 @@
+# Scoped coverage for Task SDK anomaly modules (used only by `.github/workflows/ci-anomaly.yml`).
+#
+# This is intentionally kept in `.github/anomaly-ci/` so it's obvious, self-contained,
+# and easy to remove when merging this feature work upstream.
+
+[run]
+branch = true
+relative_files = true
+
+# Keep behavior consistent with the repo-wide coverage defaults.
+omit = [
+    "airflow-core/src/airflow/_vendor/**",
+    "airflow-core/src/airflow/contrib/**",
+    "airflow-core/src/airflow/example_dags/**",
+    "airflow-core/src/airflow/migrations/**",
+    "providers/google/src/airflow/providers/**/example_dags/**",
+    "providers/google/src/airflow/providers/google/ads/_vendor/**",
+]
+
+# Only trace the Task SDK anomaly codepath.
+include = [
+    "*/airflow/sdk/definitions/anomaly_detection.py",
+]
