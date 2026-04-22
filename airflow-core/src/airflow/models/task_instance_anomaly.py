@@ -20,7 +20,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import Boolean, Integer, String, UniqueConstraint, select
+from sqlalchemy import Boolean, Float, Integer, String, UniqueConstraint, select
 from sqlalchemy.orm import Mapped, mapped_column
 
 if TYPE_CHECKING:
@@ -46,6 +46,11 @@ class TaskInstanceAnomaly(Base):
     is_anomalous: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     detector_name: Mapped[str] = mapped_column(String(100), nullable=False, default="always_true")
     reason: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
+    historic_runs_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    used_equal_map_index: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    duration: Mapped[float | None] = mapped_column(Float, nullable=True)
+    start_date: Mapped[datetime | None] = mapped_column(UtcDateTime, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         UtcDateTime,
@@ -78,6 +83,8 @@ def record_task_instance_anomaly(
     is_anomalous: bool,
     detector_name: str,
     reason: str | None,
+    historic_runs_count: int = 0,
+    used_equal_map_index: bool = True,
 ) -> TaskInstanceAnomaly:
     """Insert or update the TaskInstanceAnomaly row for the given TaskInstance."""
     identity = {
@@ -91,6 +98,10 @@ def record_task_instance_anomaly(
         "is_anomalous": is_anomalous,
         "detector_name": detector_name,
         "reason": reason,
+        "historic_runs_count": historic_runs_count,
+        "used_equal_map_index": used_equal_map_index,
+        "start_date": getattr(task_instance, "start_date", None),
+        "duration": getattr(task_instance, "duration", None),
     }
 
     row = session.scalar(

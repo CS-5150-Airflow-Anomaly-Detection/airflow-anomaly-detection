@@ -1030,6 +1030,8 @@ class RecordTaskAnomaly(BaseModel):
     detector_name: str
     reason: str | None = None
     type: Literal["RecordTaskAnomaly"] = "RecordTaskAnomaly"
+    historic_runs_count: int = 0
+    used_equal_map_index: bool = True
 
 
 ToSupervisor = Annotated[

@@ -55,6 +55,8 @@ def get_task_instance_anomalies(
     if run_id:
         statement = statement.where(TaskInstanceAnomaly.run_id == run_id)
 
+    statement = statement.order_by(TaskInstanceAnomaly.start_date.desc())
+
     map_select, total_entries = paginated_select(
         statement=statement,
         filters=[],

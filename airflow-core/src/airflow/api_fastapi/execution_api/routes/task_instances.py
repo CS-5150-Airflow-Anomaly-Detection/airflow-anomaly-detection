@@ -702,6 +702,8 @@ def ti_put_anomaly(
         is_anomalous=body["is_anomalous"],
         detector_name=body["detector_name"],
         reason=body.get("reason"),
+        historic_runs_count=body.get("historic_runs_count", 0),
+        used_equal_map_index=body.get("used_equal_map_index", True),
     )
     return {
         "message": "Task anomaly recorded",
@@ -714,6 +716,10 @@ def ti_put_anomaly(
         "is_anomalous": anomaly.is_anomalous,
         "detector_name": anomaly.detector_name,
         "reason": anomaly.reason,
+        "historic_runs_count": anomaly.historic_runs_count,
+        "used_equal_map_index": anomaly.used_equal_map_index,
+        "start_date": anomaly.start_date.isoformat() if anomaly.start_date else None,
+        "duration": anomaly.duration,
     }
 
 
