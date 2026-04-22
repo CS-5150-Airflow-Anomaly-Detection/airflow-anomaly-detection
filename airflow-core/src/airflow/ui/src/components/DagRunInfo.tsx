@@ -35,6 +35,9 @@ type Props = {
   readonly state?: DAGRunResponse["state"];
 };
 
+const hasValue = (value: string | null | undefined): value is string =>
+  value !== undefined && value !== null && value !== "";
+
 const DagRunInfo = ({ endDate, isAnomalous, logicalDate, runAfter, startDate, state }: Props) => {
   const { t: translate } = useTranslation("common");
 
@@ -51,9 +54,24 @@ const DagRunInfo = ({ endDate, isAnomalous, logicalDate, runAfter, startDate, st
               <Text>
                 {translate("state")}: {translate(`common:states.${state}`)}
               </Text>
-              {isAnomalous && (
+              {hasValue(logicalDate) ? (
+                <Text>
+                  {translate("logicalDate")}: <Time datetime={logicalDate} showTooltip={false} />
+                </Text>
+              ) : undefined}
+              {hasValue(startDate) ? (
+                <Text>
+                  {translate("startDate")}: <Time datetime={startDate} showTooltip={false} />
+                </Text>
+              ) : undefined}
+              {hasValue(endDate) ? (
+                <Text>
+                  {translate("endDate")}: <Time datetime={endDate} showTooltip={false} />
+                </Text>
+              ) : undefined}
+              {isAnomalous ? (
                 <Text>{translate("anomalyDetected", "Performance anomaly detected")}</Text>
-              )}
+              ) : undefined}
             </>
           )}
         </VStack>
@@ -63,7 +81,7 @@ const DagRunInfo = ({ endDate, isAnomalous, logicalDate, runAfter, startDate, st
         <HStack display="inline-flex" gap={1}>
           <Time datetime={runAfter} mr={2} showTooltip={false} />
           {state !== undefined && <StateBadge aria-label={state} data-testid="state-badge" state={state} />}
-          {state !== undefined && isAnomalous && (
+          {state !== undefined && isAnomalous ? (
             <Box
               aria-label={translate("anomalyDetected", "Anomaly detected")}
               color="orange.600"
@@ -72,7 +90,7 @@ const DagRunInfo = ({ endDate, isAnomalous, logicalDate, runAfter, startDate, st
             >
               <FiAlertTriangle size={22} strokeWidth={2.75} />
             </Box>
-          )}
+          ) : undefined}
         </HStack>
       </Box>
     </Tooltip>

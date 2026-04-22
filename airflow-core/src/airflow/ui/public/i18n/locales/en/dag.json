@@ -1,5 +1,23 @@
 {
   "allRuns": "All Runs",
+  "anomalies": {
+    "columns": {
+      "detector": "Detector",
+      "firstDetected": "First detected",
+      "lastUpdated": "Last updated",
+      "reason": "Reason",
+      "status": "Status"
+    },
+    "description": "Tasks in this DAG that ran significantly faster or slower than their historical baselines are listed below. Use this to spot performance regressions or unexpected speedups.",
+    "emptyTasks": "No tasks in this DAG.",
+    "loadError": "Failed to load anomalies. Please try again.",
+    "perTaskStatus": "Per-task anomaly status",
+    "statuses": {
+      "anomalous": "Anomalous",
+      "normal": "Normal"
+    },
+    "title": "Task performance anomalies"
+  },
   "blockingDeps": {
     "dependency": "Dependency",
     "reason": "Reason",
