@@ -111,7 +111,7 @@ class AnomalyDetector:
     Subclasses should override detect_anomalies().
     """
 
-    def __init__(self, min_runs: int, max_runs: int, algorithm=None):
+    def __init__(self, min_runs: int, max_runs: int, algorithm=AlwaysAnomaly()):
         """
         Initialize an anomaly detector configuration.
 
@@ -131,7 +131,7 @@ class AnomalyDetector:
         """
         self.min_runs = min_runs
         self.max_runs = max_runs
-        self.algorithm = algorithm or AlwaysAnomaly()
+        self.algorithm = algorithm
 
     def _get_historical_runtimes(self, ti) -> list[float]:
         """Fetch durations from prior successful task instances via supervisor comms."""
