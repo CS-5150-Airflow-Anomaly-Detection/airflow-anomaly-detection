@@ -27,8 +27,8 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { FiAlertTriangle } from "react-icons/fi";
 import { useTranslation } from "react-i18next";
+import { FiAlertTriangle } from "react-icons/fi";
 import { Link as RouterLink, useParams } from "react-router-dom";
 
 import {
