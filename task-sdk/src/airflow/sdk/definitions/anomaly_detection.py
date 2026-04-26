@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import math
+from typing import Any
 
 import structlog
 
@@ -31,15 +32,32 @@ __all__ = [
 
 
 class AnomalyResult:
-    """Result of anomaly detection."""
+    """
+    Result of anomaly detection.
+
+    Parameters
+    ----------
+    is_anomaly : bool
+        Whether the latest runtime should be flagged as anomalous.
+
+    message : str
+        Human-readable summary of the anomaly evaluation. This is used in
+        parent detector logging and when emitting the anomaly payload.
+
+    details : dict[str, Any] | None
+        Optional structured fields supplied by the anomaly algorithm for the
+        parent detector to include in its logs.
+    """
 
     def __init__(
         self,
         is_anomaly: bool,
         message: str = "",
+        details: dict[str, Any] | None = None,
     ):
         self.is_anomaly = is_anomaly
         self.message = message
+        self.details = details or {}
 
 
 class AlwaysAnomaly:
@@ -49,7 +67,11 @@ class AlwaysAnomaly:
         pass
 
     def __call__(self, runtimes):
-        return AnomalyResult(True)
+        return AnomalyResult(
+            True,
+            message="AlwaysAnomaly marks every task instance as anomalous.",
+            details={"current_runtime": runtimes[-1]},
+        )
 
 
 class ThresholdAnomaly:
@@ -62,8 +84,24 @@ class ThresholdAnomaly:
     def __call__(self, runtimes):
         cur_runtime = runtimes[-1]
         if cur_runtime >= self.min_runtime and cur_runtime <= self.max_runtime:
-            return AnomalyResult(False)
-        return AnomalyResult(True)
+            return AnomalyResult(
+                False,
+                message="Runtime is within the configured threshold range.",
+                details={
+                    "current_runtime": cur_runtime,
+                    "min_runtime": None if math.isinf(self.min_runtime) else self.min_runtime,
+                    "max_runtime": None if math.isinf(self.max_runtime) else self.max_runtime,
+                },
+            )
+        return AnomalyResult(
+            True,
+            message="Runtime is outside the configured threshold range.",
+            details={
+                "current_runtime": cur_runtime,
+                "min_runtime": None if math.isinf(self.min_runtime) else self.min_runtime,
+                "max_runtime": None if math.isinf(self.max_runtime) else self.max_runtime,
+            },
+        )
 
 
 class AnomalyDetector:
@@ -132,38 +170,67 @@ class AnomalyDetector:
         Imports are deferred to runtime so DAG parsing does not load execution modules.
         """
         log = structlog.get_logger(logger_name="task")
+        detector_name = type(self.algorithm).__name__
 
         ti = context.get("ti")
         if ti is None:
+            log.debug("Skipping anomaly detection due to missing task instance context")
             return
 
         start_date = getattr(ti, "start_date", None)
         end_date = getattr(ti, "end_date", None)
         if start_date is None or end_date is None:
+            log.debug(
+                "Anomaly detection skipped due to incomplete task instance timing",
+                has_start_date=start_date is not None,
+                has_end_date=end_date is not None,
+            )
             return
+
+        log.info(
+            "Anomaly detection started",
+            detector_name=detector_name,
+            min_runs=self.min_runs,
+            max_runs=self.max_runs,
+        )
 
         current_duration = (end_date - start_date).total_seconds()
         historical_runtimes = self._get_historical_runtimes(ti)
         runtimes = [*historical_runtimes, current_duration]
 
-        log.info("Retrieved runtimes:", found_runs=len(runtimes), runtimes=runtimes)
+        log.debug(
+            "Anomaly detection retrieved historical runtimes",
+            runs_considered=len(runtimes),
+            runtimes=runtimes,
+        )
 
         if len(runtimes) < self.min_runs:
-            log.debug(
-                "Skipping anomaly detection due to insufficient successful runs",
+            log.info(
+                "Anomaly detection skipped due to insufficient run count",
                 found_runs=len(runtimes),
                 required_runs=self.min_runs,
             )
             return
 
-        result = self.algorithm(runtimes)
+        try:
+            result = self.algorithm(runtimes)
+        except Exception:
+            log.exception("Anomaly detection evaluation failed", detector_name=detector_name)
+            return
+
+        log.info(
+            "Anomaly detection evaluated",
+            is_anomaly=str(result.is_anomaly),
+            reason=result.message,
+            **result.details,
+        )
 
         try:
             # Import runtime dependencies
             from airflow.sdk.execution_time.comms import RecordTaskAnomaly
             from airflow.sdk.execution_time.task_runner import SUPERVISOR_COMMS
         except Exception:
-            log.debug("Supervisor comms unavailable; skipping anomaly emit")
+            log.info("Anomaly detection emit skipped", reason="supervisor_comms_unavailable")
             return
 
         try:
@@ -175,9 +242,18 @@ class AnomalyDetector:
                     map_index=getattr(ti, "map_index", -1),
                     try_number=getattr(ti, "try_number", 0),
                     is_anomalous=bool(getattr(result, "is_anomaly", False)),
-                    detector_name=type(self.algorithm).__name__,
+                    detector_name=detector_name,
                     reason=(getattr(result, "message", "") or None),
                 )
             )
+            log.info(
+                "Anomaly payload emitted",
+                detector_name=detector_name,
+                is_anomaly=bool(getattr(result, "is_anomaly", False)),
+            )
         except Exception:
-            log.exception("Failed to emit anomaly payload")
+            log.exception(
+                "Failed to emit anomaly payload",
+                detector_name=detector_name,
+                is_anomaly=bool(getattr(result, "is_anomaly", False)),
+            )
