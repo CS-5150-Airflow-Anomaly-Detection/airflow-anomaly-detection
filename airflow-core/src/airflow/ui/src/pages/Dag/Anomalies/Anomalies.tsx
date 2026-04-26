@@ -28,6 +28,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { FiAlertTriangle } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
 import { Link as RouterLink, useParams } from "react-router-dom";
 
 import {
@@ -181,7 +182,6 @@ export const Anomalies = () => {
 
                     return (
                       <Table.Row key={task.task_id ?? task.task_display_name ?? ""}>
-                        <Table.Cell>{task.task_display_name ?? task.task_id ?? EMPTY_VALUE}</Table.Cell>
                         <Table.Cell>
                           {taskAnomaliesPath === undefined ? (
                             taskLabel
@@ -204,9 +204,6 @@ export const Anomalies = () => {
                           ) : (
                             "—"
                           )}
-                        </Table.Cell>
-                        <Table.Cell>
-                          {latestAnomaly ? <Time datetime={latestAnomaly.updated_at} /> : EMPTY_VALUE}
                         </Table.Cell>
                         <Table.Cell>{latestAnomaly?.detector_name ?? EMPTY_VALUE}</Table.Cell>
                         <Table.Cell>
