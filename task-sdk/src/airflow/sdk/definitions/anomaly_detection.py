@@ -78,7 +78,14 @@ class AlwaysAnomaly:
 
 
 class ThresholdAnomaly:
-    """Anomaly type: if the latest runtime is outside [min_runtime, max_runtime], flag an anomaly."""
+    """
+    Anomaly type: if the latest runtime is outside [min_runtime, max_runtime], flag an anomaly.
+
+    Constraints:
+    * min_runtime defaults to -inf (no lower bound).
+    * max_runtime defaults to +inf (no upper bound).
+    * If min_runtime > max_runtime, every runtime will be flagged as anomalous.
+    """
 
     def __init__(self, min_runtime=-math.inf, max_runtime=math.inf):
         self.min_runtime = min_runtime
@@ -113,6 +120,7 @@ class ZScoreAnomaly:
 
     Constraints:
     * Requires min_runs > 2.
+    * z_threshold must be > 0.
     """
 
     def __init__(self, z_threshold=3.0):
@@ -123,8 +131,11 @@ class ZScoreAnomaly:
         ----------
         z_threshold
             Number of standard deviations the latest runtime may differ from the
-            historical mean before being flagged as anomalous.
+            historical mean before being flagged as anomalous. Must be > 0; a value
+            of 0 would flag every runtime as anomalous since any z-score >= 0.
         """
+        if z_threshold <= 0:
+            raise ValueError(f"z_threshold must be > 0, got {z_threshold}")
         self.z_threshold = z_threshold
 
     def __call__(self, runtimes):
@@ -185,23 +196,29 @@ class MovingAverageAnomaly:
 
     Constraints:
     * Requires min_runs > 1.
+    * min_ratio must be between 0 and 1 (exclusive).
+    * max_ratio must be > 1.
     """
 
-    def __init__(self, window_size=5, min_ratio=0.5, max_ratio=1.5):
+    def __init__(self, min_ratio=0.5, max_ratio=1.5):
         """
-        Initialize the anomaly type rolling window and allowed deviation range from the moving average.
+        Initialize the anomaly type allowed deviation range from the moving average.
+
+        The window of historical runtimes is controlled by ``AnomalyDetector.max_runs``.
 
         Parameters
         ----------
-        window_size
-            Number of most recent historical runtimes used to compute the
-            moving-average baseline.
         min_ratio
             Lower bound multiplier applied to the moving-average baseline.
+            Must be between 0 and 1 (exclusive).
         max_ratio
             Upper bound multiplier applied to the moving-average baseline.
+            Must be > 1.
         """
-        self.window_size = window_size
+        if not (0 < min_ratio < 1):
+            raise ValueError(f"min_ratio must be between 0 and 1 (exclusive), got {min_ratio}")
+        if max_ratio <= 1:
+            raise ValueError(f"max_ratio must be > 1, got {max_ratio}")
         self.min_ratio = min_ratio
         self.max_ratio = max_ratio
 
@@ -211,7 +228,6 @@ class MovingAverageAnomaly:
         details = {
             "current_runtime": cur_runtime,
             "historical_run_count": len(historical_runtimes),
-            "window_size": self.window_size,
             "min_ratio": self.min_ratio,
             "max_ratio": self.max_ratio,
         }
@@ -223,9 +239,7 @@ class MovingAverageAnomaly:
                 details=details,
             )
 
-        window = historical_runtimes[-self.window_size :]
-        moving_average = statistics.mean(window)
-        details["window_size"] = len(window)
+        moving_average = statistics.mean(historical_runtimes)
         details["moving_average"] = moving_average
 
         if moving_average == 0:
@@ -256,16 +270,17 @@ class MovingAverageAnomaly:
         return AnomalyResult(
             True,
             f"Latest runtime {cur_runtime:.2f}s is outside the moving-average range "
-            f"[{min_runtime:.2f}s, {max_runtime:.2f}s] computed from the last {len(window)} runs.",
+            f"[{min_runtime:.2f}s, {max_runtime:.2f}s] computed from the last {len(historical_runtimes)} runs.",
             details=details,
         )
 
 
 class AnomalyDetector:
     """
-    Base class for anomaly detection strategies.
+    Runs an anomaly detection algorithm as a task success callback.
 
-    Subclasses should override detect_anomalies().
+    Collects historical runtimes for the task instance, passes them to the
+    configured algorithm, and emits the result to the API server.
     """
 
     def __init__(self, min_runs: int, max_runs: int, algorithm=None):
@@ -284,8 +299,7 @@ class AnomalyDetector:
             Older runs should be discarded. Requires max_runs >= 1 and max_runs >= min_runs.
 
         algorithm : callable object/function
-            Must implement algorithm(runtimes) -> AnomalyResult
-            returning an AnomalyResult showing whether an anomaly was detected for the last runtime, and associated information.
+            Must implement ``algorithm(runtimes) -> AnomalyResult``.
         """
         if min_runs < 1:
             raise ValueError("min_runs must be at least 1")
