@@ -23,6 +23,7 @@ __all__ = [
     "AlwaysAnomaly",
     "AnomalyDetector",
     "AnomalyResult",
+    "MovingAverageAnomaly",
     "Asset",
     "AssetAlias",
     "AssetAll",
@@ -63,6 +64,7 @@ __all__ = [
     "TaskGroup",
     "TaskInstanceState",
     "ThresholdAnomaly",
+    "ZScoreAnomaly",
     "Trace",
     "TriggerRule",
     "Variable",
@@ -104,7 +106,9 @@ if TYPE_CHECKING:
         AlwaysAnomaly,
         AnomalyDetector,
         AnomalyResult,
+        MovingAverageAnomaly,
         ThresholdAnomaly,
+        ZScoreAnomaly,
     )
     from airflow.sdk.definitions.asset import Asset, AssetAlias, AssetAll, AssetAny, AssetWatcher
     from airflow.sdk.definitions.asset.decorators import asset
@@ -149,6 +153,7 @@ __lazy_imports: dict[str, str] = {
     "AlwaysAnomaly": ".definitions.anomaly_detection",
     "AnomalyDetector": ".definitions.anomaly_detection",
     "AnomalyResult": ".definitions.anomaly_detection",
+    "MovingAverageAnomaly": ".definitions.anomaly_detection",
     "Asset": ".definitions.asset",
     "AssetAlias": ".definitions.asset",
     "AssetAll": ".definitions.asset",
@@ -190,6 +195,7 @@ __lazy_imports: dict[str, str] = {
     "TaskGroup": ".definitions.taskgroup",
     "TaskInstanceState": ".api.datamodels._generated",
     "ThresholdAnomaly": ".definitions.anomaly_detection",
+    "ZScoreAnomaly": ".definitions.anomaly_detection",
     "Trace": ".observability.trace",
     "TriggerRule": ".api.datamodels._generated",
     "Variable": ".definitions.variable",

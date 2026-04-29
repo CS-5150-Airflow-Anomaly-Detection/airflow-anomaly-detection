@@ -26,7 +26,14 @@ import datetime
 import time
 from pathlib import Path
 
-from airflow.sdk import DAG, AnomalyDetector, Param, ThresholdAnomaly, TriggerRule, task
+from airflow.sdk import (
+    DAG,
+    AnomalyDetector,
+    Param,
+    ThresholdAnomaly,
+    TriggerRule,
+    task,
+)
 
 # [START params_trigger]
 with DAG(
