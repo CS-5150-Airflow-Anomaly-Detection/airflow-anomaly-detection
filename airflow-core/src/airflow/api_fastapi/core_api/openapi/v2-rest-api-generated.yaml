@@ -12527,6 +12527,23 @@ components:
           - type: string
           - type: 'null'
           title: Reason
+        historic_runs_count:
+          type: integer
+          title: Historic Runs Count
+        used_equal_map_index:
+          type: boolean
+          title: Used Equal Map Index
+        duration:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Duration
+        start_date:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Start Date
         created_at:
           type: string
           format: date-time
@@ -12546,6 +12563,10 @@ components:
       - is_anomalous
       - detector_name
       - reason
+      - historic_runs_count
+      - used_equal_map_index
+      - duration
+      - start_date
       - created_at
       - updated_at
       title: TaskInstanceAnomalyResponse

@@ -16,10 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { Badge, Box, Flex, Heading, Skeleton, Table, Text, VStack } from "@chakra-ui/react";
+import {
+  Badge,
+  Box,
+  Flex,
+  Heading,
+  Link,
+  Skeleton,
+  Table,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { FiAlertTriangle } from "react-icons/fi";
-import { useParams } from "react-router-dom";
+import { Link as RouterLink, useParams } from "react-router-dom";
 
 import {
   useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies,
@@ -33,7 +43,6 @@ import { useGridStructure } from "src/queries/useGridStructure.ts";
 
 const EMPTY_VALUE = "—";
 
-/** When the API omits `reason`, show a human-readable line derived from `detector_name` (UI-only). */
 const getTaskAnomalyReasonDisplay = (anomaly: TaskInstanceAnomalyResponse): string => {
   const trimmed = anomaly.reason?.trim();
 
@@ -165,14 +174,36 @@ export const Anomalies = () => {
                     const latestAnomaly = anomaliesByTime.at(-1);
                     const isAnomalous = latestAnomaly?.is_anomalous ?? false;
 
+                    const taskLabel = task.task_display_name ?? task.task_id ?? "—";
+                    const taskAnomaliesPath =
+                      taskId === ""
+                        ? undefined
+                        : `/dags/${dagId}/tasks/${encodeURIComponent(taskId)}/task_anomalies`;
+
                     return (
                       <Table.Row key={task.task_id ?? task.task_display_name ?? ""}>
-                        <Table.Cell>{task.task_display_name ?? task.task_id ?? EMPTY_VALUE}</Table.Cell>
                         <Table.Cell>
-                          {firstAnomaly ? <Time datetime={firstAnomaly.created_at} /> : EMPTY_VALUE}
+                          {taskAnomaliesPath === undefined ? (
+                            taskLabel
+                          ) : (
+                            <Link asChild color="fg.info" fontWeight="bold">
+                              <RouterLink to={taskAnomaliesPath}>{taskLabel}</RouterLink>
+                            </Link>
+                          )}
                         </Table.Cell>
                         <Table.Cell>
-                          {latestAnomaly ? <Time datetime={latestAnomaly.updated_at} /> : EMPTY_VALUE}
+                          {firstAnomaly ? (
+                            <Time datetime={firstAnomaly.created_at} />
+                          ) : (
+                            "—"
+                          )}
+                        </Table.Cell>
+                        <Table.Cell>
+                          {latestAnomaly ? (
+                            <Time datetime={latestAnomaly.updated_at} />
+                          ) : (
+                            "—"
+                          )}
                         </Table.Cell>
                         <Table.Cell>{latestAnomaly?.detector_name ?? EMPTY_VALUE}</Table.Cell>
                         <Table.Cell>

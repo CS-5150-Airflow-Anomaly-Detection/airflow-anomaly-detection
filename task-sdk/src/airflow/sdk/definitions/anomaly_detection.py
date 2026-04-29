@@ -375,6 +375,7 @@ class AnomalyDetector:
 
         current_duration = (end_date - start_date).total_seconds()
         historical_runtimes = self._get_historical_runtimes(ti)
+        historic_runs_count = len(historical_runtimes)
         runtimes = [*historical_runtimes, current_duration]
 
         log.debug(
@@ -423,6 +424,8 @@ class AnomalyDetector:
                     is_anomalous=bool(getattr(result, "is_anomaly", False)),
                     detector_name=detector_name,
                     reason=(getattr(result, "message", "") or None),
+                    historic_runs_count=historic_runs_count,
+                    used_equal_map_index=True,  # historical runtimes always use same map index right now
                 )
             )
             log.info(

@@ -52,8 +52,7 @@ import { Run } from "src/pages/Run";
 import { AssetEvents as DagRunAssetEvents } from "src/pages/Run/AssetEvents";
 import { Details as DagRunDetails } from "src/pages/Run/Details";
 import { Security } from "src/pages/Security";
-import { Task } from "src/pages/Task";
-import { Overview as TaskOverview } from "src/pages/Task/Overview";
+import { Task, TaskAnomalies, Overview as TaskOverview } from "src/pages/Task";
 import { TaskInstance, Logs } from "src/pages/TaskInstance";
 import { AssetEvents as TaskInstanceAssetEvents } from "src/pages/TaskInstance/AssetEvents";
 import { Details as TaskInstanceDetails } from "src/pages/TaskInstance/Details";
@@ -212,6 +211,7 @@ export const routerConfig = [
         children: [
           { element: <TaskOverview />, index: true },
           { element: <TaskInstances />, path: "task_instances" },
+          { element: <TaskAnomalies />, path: "task_anomalies" },
           { element: <HITLTaskInstances />, path: "required_actions" },
           pluginRoute,
         ],
@@ -227,6 +227,7 @@ export const routerConfig = [
         children: [
           { element: <TaskOverview />, index: true },
           { element: <TaskInstances />, path: "task_instances" },
+          { element: <TaskAnomalies />, path: "task_anomalies" },
           { element: <HITLTaskInstances />, path: "required_actions" },
           { element: <Events />, path: "events" },
           pluginRoute,

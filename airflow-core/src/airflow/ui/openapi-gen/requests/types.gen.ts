@@ -1365,6 +1365,10 @@ export type TaskInstanceAnomalyResponse = {
     is_anomalous: boolean;
     detector_name: string;
     reason: string | null;
+    historic_runs_count: number;
+    used_equal_map_index: boolean;
+    duration: number | null;
+    start_date: string | null;
     created_at: string;
     updated_at: string;
 };

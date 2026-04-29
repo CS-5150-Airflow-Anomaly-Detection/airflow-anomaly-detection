@@ -38,6 +38,10 @@ class TaskInstanceAnomalyResponse(BaseModel):
     is_anomalous: bool
     detector_name: str
     reason: str | None
+    historic_runs_count: int
+    used_equal_map_index: bool
+    duration: float | None
+    start_date: datetime | None
     created_at: datetime
     updated_at: datetime
 

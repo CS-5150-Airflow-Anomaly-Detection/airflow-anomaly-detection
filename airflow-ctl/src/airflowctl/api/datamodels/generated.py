@@ -794,6 +794,10 @@ class TaskInstanceAnomalyResponse(BaseModel):
     is_anomalous: Annotated[bool, Field(title="Is Anomalous")]
     detector_name: Annotated[str, Field(title="Detector Name")]
     reason: Annotated[str | None, Field(title="Reason")] = None
+    historic_runs_count: Annotated[int, Field(title="Historic Runs Count")]
+    used_equal_map_index: Annotated[bool, Field(title="Used Equal Map Index")]
+    duration: Annotated[float | None, Field(title="Duration")] = None
+    start_date: Annotated[datetime | None, Field(title="Start Date")] = None
     created_at: Annotated[datetime, Field(title="Created At")]
     updated_at: Annotated[datetime, Field(title="Updated At")]
 

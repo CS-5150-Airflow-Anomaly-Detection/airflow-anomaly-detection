@@ -5161,6 +5161,37 @@ export const $TaskInstanceAnomalyResponse = {
             ],
             title: 'Reason'
         },
+        historic_runs_count: {
+            type: 'integer',
+            title: 'Historic Runs Count'
+        },
+        used_equal_map_index: {
+            type: 'boolean',
+            title: 'Used Equal Map Index'
+        },
+        duration: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Duration'
+        },
+        start_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Start Date'
+        },
         created_at: {
             type: 'string',
             format: 'date-time',
@@ -5173,7 +5204,7 @@ export const $TaskInstanceAnomalyResponse = {
         }
     },
     type: 'object',
-    required: ['id', 'dag_id', 'run_id', 'task_id', 'map_index', 'try_number', 'is_anomalous', 'detector_name', 'reason', 'created_at', 'updated_at'],
+    required: ['id', 'dag_id', 'run_id', 'task_id', 'map_index', 'try_number', 'is_anomalous', 'detector_name', 'reason', 'historic_runs_count', 'used_equal_map_index', 'duration', 'start_date', 'created_at', 'updated_at'],
     title: 'TaskInstanceAnomalyResponse',
     description: 'Task Instance Anomaly serializer for responses.'
 } as const;
