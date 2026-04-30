@@ -146,7 +146,7 @@ export const Anomalies = () => {
             <Table.Root size="sm" striped>
               <Table.Header bg="chakra-body-bg" position="sticky" top={0} zIndex={1}>
                 <Table.Row>
-                  <Table.ColumnHeader>{translate("common:task")}</Table.ColumnHeader>
+                  <Table.ColumnHeader>{translate("common:task", { count: 1 })}</Table.ColumnHeader>
                   <Table.ColumnHeader>{translate("dag:anomalies.columns.firstDetected")}</Table.ColumnHeader>
                   <Table.ColumnHeader>{translate("dag:anomalies.columns.lastUpdated")}</Table.ColumnHeader>
                   <Table.ColumnHeader>{translate("dag:anomalies.columns.detector")}</Table.ColumnHeader>

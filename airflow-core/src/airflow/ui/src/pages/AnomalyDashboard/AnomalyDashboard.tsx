@@ -88,7 +88,7 @@ export const AnomalyDashboard = () => {
             <Table.Header bg="chakra-body-bg" position="sticky" top={0} zIndex={1}>
               <Table.Row>
                 <Table.ColumnHeader>{translate("common:dagId")}</Table.ColumnHeader>
-                <Table.ColumnHeader>{translate("common:task")}</Table.ColumnHeader>
+                <Table.ColumnHeader>{translate("common:task", { count: 1 })}</Table.ColumnHeader>
                 <Table.ColumnHeader>{translate("common:runId")}</Table.ColumnHeader>
                 <Table.ColumnHeader>{translate("dashboard:anomalies.columns.detected")}</Table.ColumnHeader>
                 <Table.ColumnHeader>{translate("common:duration")}</Table.ColumnHeader>
