@@ -15,6 +15,10 @@ omit = [
     "airflow-core/src/airflow/migrations/**",
     "providers/google/src/airflow/providers/**/example_dags/**",
     "providers/google/src/airflow/providers/google/ads/_vendor/**",
+    # Breeze measures `--cov=airflow`, which includes core modules as well as SDK.
+    # Explicitly omit backend/core paths so Task SDK coverage stays SDK-only.
+    "*/airflow/api_fastapi/**",
+    "*/airflow/models/**",
 ]
 
 # Only trace the Task SDK anomaly codepath.
