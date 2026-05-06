@@ -187,8 +187,8 @@
     "renderedTemplates": "Rendered Templates",
     "requiredActions": "Required Actions",
     "runs": "Runs",
-    "taskInstances": "Task Instances",
     "taskAnomalies": "Task Anomalies",
+    "taskInstances": "Task Instances",
     "tasks": "Tasks",
     "xcom": "XCom"
   },

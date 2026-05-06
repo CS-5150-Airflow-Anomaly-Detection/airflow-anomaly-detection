@@ -150,8 +150,7 @@ export const DataTable = <TData,>({
 
   const display = displayMode === "card" && Boolean(cardDef) ? "card" : "table";
   const hasRows = rows.length > 0;
-  const showTable =
-    display === "table" && (hasRows || (Boolean(showTableWhenEmpty) && !Boolean(isLoading)));
+  const showTable = display === "table" && (hasRows || (Boolean(showTableWhenEmpty) && !Boolean(isLoading)));
   const hasPagination = initialState?.pagination !== undefined && (pageIndex !== 0 || rows.length !== total);
 
   // Default to show columns filter only if there are actually many columns displayed
@@ -163,9 +162,9 @@ export const DataTable = <TData,>({
   );
   const showRowCount = Boolean(
     showRowCountHeading &&
-      !Boolean(isLoading) &&
-      !Boolean(isFetching) &&
-      (rowCountHeadingRender === undefined ? total > 0 : true),
+    !Boolean(isLoading) &&
+    !Boolean(isFetching) &&
+    (rowCountHeadingRender === undefined ? total > 0 : true),
   );
   const noRowsModelName = translateModelName(0);
 
