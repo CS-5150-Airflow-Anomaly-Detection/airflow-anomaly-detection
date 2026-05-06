@@ -92,7 +92,7 @@ jobs:
             --cov-config=.github/anomaly-ci/backend-coverage.toml \
             --cov-report=xml:/files/coverage/backend-anomaly-cobertura.xml \
             --cov-report=html:/files/coverage/backend-anomaly-html \
-            --cov-report=term-missing
+            --cov-report=term-missing \
             --cov-fail-under=70
       - name: "Upload scoped backend coverage (HTML)"
         if: success() || failure()
@@ -122,7 +122,7 @@ jobs:
             --cov-config=.github/anomaly-ci/task-sdk-coverage.toml \
             --cov-report=xml:/files/coverage/task-sdk-anomaly-cobertura.xml \
             --cov-report=html:/files/coverage/task-sdk-anomaly-html \
-            --cov-report=term-missing
+            --cov-report=term-missing \
             --cov-fail-under=90
       - name: "Upload scoped Task SDK coverage (HTML)"
         if: success() || failure()
