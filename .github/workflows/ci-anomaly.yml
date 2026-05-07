@@ -60,7 +60,11 @@ jobs:
         run: prek --all-files --show-diff-on-failure --color always
         env:
           VERBOSE: "true"
-          SKIP: ${{ inputs.skip-prek-hooks }}
+          # This simplified workflow doesn't validate provider.yaml importability because it depends on
+          # provider-specific third-party libraries that aren't installed in this job's minimal environment.
+          # (Example: Azure provider references `azure.batch.BatchServiceClient` which may not exist without
+          # the correct extra/version installed.)
+          SKIP: ${{ inputs.skip-prek-hooks }},check-provider-yaml-valid
           COLUMNS: "202"
           SKIP_GROUP_OUTPUT: "true"
           DEFAULT_BRANCH: ${{ inputs.branch }}
