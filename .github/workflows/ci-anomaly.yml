@@ -129,7 +129,8 @@ jobs:
           _print_dir(cwd / "files")
           _print_dir(cwd / "files" / "coverage")
 
-          xml_path = Path("coverage/backend-anomaly-cobertura.xml")
+          xml_path = cwd / "files" / "coverage" / "backend-anomaly-cobertura.xml"
+
           if not xml_path.exists():
               raise SystemExit(f"Missing coverage XML at {xml_path.resolve()}")
 
@@ -211,7 +212,8 @@ jobs:
           _print_dir(cwd / "files")
           _print_dir(cwd / "files" / "coverage")
 
-          xml_path = Path("coverage/task-sdk-anomaly-cobertura.xml")
+          xml_path = cwd / "files" / "coverage" / "task-sdk-anomaly-cobertura.xml"
+
           if not xml_path.exists():
               raise SystemExit(f"Missing coverage XML at {xml_path.resolve()}")
 
