@@ -92,6 +92,7 @@ export const DagCard = ({
             <Link asChild color="fg.info">
               <RouterLink to={`/dags/${latestRun.dag_id}/runs/${latestRun.run_id}`}>
                 <DagRunInfo
+                  anomalyUrl={`/dags/${dag.dag_id}/anomalies`}
                   endDate={latestRun.end_date}
                   isAnomalous={dagRunKeysWithAnomalousTasks.has(`${dag.dag_id}::${latestRun.run_id}`)}
                   logicalDate={latestRun.logical_date}

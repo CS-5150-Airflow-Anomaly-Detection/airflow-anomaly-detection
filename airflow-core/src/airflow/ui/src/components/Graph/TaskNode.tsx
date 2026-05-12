@@ -16,9 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { Box, Button, Flex, HStack, LinkOverlay, Text } from "@chakra-ui/react";
+import { Badge, Box, Button, Flex, HStack, LinkOverlay, Text } from "@chakra-ui/react";
 import type { NodeProps, Node as NodeType } from "@xyflow/react";
 import { useTranslation } from "react-i18next";
+import { FiAlertTriangle } from "react-icons/fi";
 
 import { TaskIcon } from "src/assets/TaskIcon";
 import { StateBadge } from "src/components/StateBadge";
@@ -34,6 +35,7 @@ export const TaskNode = ({
     childCount,
     depth,
     height = 0,
+    isAnomalous,
     isGroup,
     isMapped,
     isOpen,
@@ -129,10 +131,24 @@ export const TaskNode = ({
               {isGroup ? translate("graph.taskGroup") : displayOperator}
             </Text>
             {taskInstance === undefined ? undefined : (
-              <HStack>
+              <HStack flexWrap="wrap" gap={1}>
                 <StateBadge fontSize="xs" state={taskInstance.state}>
                   {taskInstance.state}
                 </StateBadge>
+                {isAnomalous ? (
+                  <Badge
+                    borderRadius="full"
+                    colorPalette="red"
+                    fontSize="xs"
+                    gap={1}
+                    px={2}
+                    py={1}
+                    variant="solid"
+                  >
+                    <FiAlertTriangle size={10} strokeWidth={3} />
+                    {translate("anomaly", "Anomaly")}
+                  </Badge>
+                ) : undefined}
               </HStack>
             )}
             {isGroup ? (

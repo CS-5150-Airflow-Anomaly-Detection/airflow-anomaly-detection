@@ -23,7 +23,7 @@ import { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useLocalStorage } from "usehooks-ts";
 
-import { useStructureServiceStructureData } from "openapi/queries";
+import { useStructureServiceStructureData, useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies } from "openapi/queries";
 import { DownloadButton } from "src/components/Graph/DownloadButton";
 import { edgeTypes, nodeTypes } from "src/components/Graph/graphTypes";
 import type { CustomNodeProps } from "src/components/Graph/reactflowUtils";
@@ -135,6 +135,29 @@ export const Graph = () => {
 
   const { data: gridTISummaries } = useGridTiSummaries({ dagId, runId });
 
+  const { data: tiAnomalyData } = useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies(
+    { dagId: dagId || undefined, limit: 2000, offset: 0 },
+    undefined,
+    { enabled: Boolean(dagId) && Boolean(runId), refetchInterval: 5000 },
+  );
+
+  const anomalousCellKeys = new Set(
+    (tiAnomalyData?.task_instance_anomalies ?? [])
+      .filter((row) => row.dag_id === dagId && row.is_anomalous)
+      .map((row) => `${row.run_id}::${row.task_id}::${row.map_index}`),
+  );
+
+  const isTaskAnomalous = (taskNodeId: string) => {
+    if (anomalousCellKeys.has(`${runId}::${taskNodeId}::-1`)) return true;
+    const prefix = `${runId}::${taskNodeId}::`;
+
+    for (const key of anomalousCellKeys) {
+      if (key.startsWith(prefix)) return true;
+    }
+
+    return false;
+  };
+
   // Add task instances to the node data but without having to recalculate how the graph is laid out
   const nodes = data?.nodes.map((node) => {
     const taskInstance = gridTISummaries?.task_instances.find((ti) => ti.task_id === node.id);
@@ -143,6 +166,7 @@ export const Graph = () => {
       ...node,
       data: {
         ...node.data,
+        isAnomalous: isTaskAnomalous(node.id),
         isSelected: node.id === taskId || node.id === groupId || node.id === `dag:${dagId}`,
         taskInstance,
       },

@@ -29,6 +29,7 @@ export type CustomNodeProps = {
   depth?: number;
   height?: number;
   id: string;
+  isAnomalous?: boolean;
   isGroup?: boolean;
   isMapped?: boolean;
   isOpen?: boolean;
