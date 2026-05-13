@@ -16,17 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import {
-  Badge,
-  Box,
-  Flex,
-  Heading,
-  Link,
-  Skeleton,
-  Table,
-  Text,
-  VStack,
-} from "@chakra-ui/react";
+import { Badge, Box, Flex, Heading, Link, Skeleton, Table, Text, VStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { FiAlertTriangle } from "react-icons/fi";
 import { Link as RouterLink, useParams } from "react-router-dom";
@@ -192,18 +182,10 @@ export const Anomalies = () => {
                           )}
                         </Table.Cell>
                         <Table.Cell>
-                          {firstAnomaly ? (
-                            <Time datetime={firstAnomaly.created_at} />
-                          ) : (
-                            "—"
-                          )}
+                          {firstAnomaly ? <Time datetime={firstAnomaly.created_at} /> : "—"}
                         </Table.Cell>
                         <Table.Cell>
-                          {latestAnomaly ? (
-                            <Time datetime={latestAnomaly.updated_at} />
-                          ) : (
-                            "—"
-                          )}
+                          {latestAnomaly ? <Time datetime={latestAnomaly.updated_at} /> : "—"}
                         </Table.Cell>
                         <Table.Cell>{latestAnomaly?.detector_name ?? EMPTY_VALUE}</Table.Cell>
                         <Table.Cell>

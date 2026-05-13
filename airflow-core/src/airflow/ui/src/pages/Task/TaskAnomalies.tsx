@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 import { Link } from "@chakra-ui/react";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
@@ -29,8 +28,8 @@ import type { TaskInstanceAnomalyResponse } from "openapi/requests/types.gen";
 import { DataTable } from "src/components/DataTable";
 import { useTableURLState } from "src/components/DataTable/useTableUrlState";
 import { ErrorAlert } from "src/components/ErrorAlert";
-import { TruncatedText } from "src/components/TruncatedText";
 import Time from "src/components/Time";
+import { TruncatedText } from "src/components/TruncatedText";
 import { renderDuration } from "src/utils";
 import { getTaskInstanceLink } from "src/utils/links";
 

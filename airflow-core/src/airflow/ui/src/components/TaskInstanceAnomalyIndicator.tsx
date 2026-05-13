@@ -31,9 +31,7 @@ export const TaskInstanceAnomalyIndicator = ({ logsTo }: Props) => {
   const { t: translate } = useTranslation();
 
   return (
-    <BasicTooltip
-      content={translate("taskInstance.anomalyClickToSeeLogs", "Click to see logs")}
-    >
+    <BasicTooltip content={translate("taskInstance.anomalyClickToSeeLogs", "Click to see logs")}>
       <RouterLink
         style={{
           display: "inline-flex",

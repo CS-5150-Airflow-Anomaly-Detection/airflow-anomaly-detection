@@ -25,7 +25,10 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link as RouterLink, useParams, useSearchParams } from "react-router-dom";
 
-import { useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies, useTaskInstanceServiceGetTaskInstances } from "openapi/queries";
+import {
+  useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies,
+  useTaskInstanceServiceGetTaskInstances,
+} from "openapi/queries";
 import type { TaskInstanceAnomalyResponse, TaskInstanceResponse } from "openapi/requests/types.gen";
 import { ClearTaskInstanceButton } from "src/components/Clear";
 import { DagVersion } from "src/components/DagVersion";
@@ -292,15 +295,13 @@ export const TaskInstances = () => {
 
   const refetchInterval = useAutoRefresh({});
 
-  const shouldFetchTiAnomalies =
-    dagId !== undefined && dagId !== "" && dagId !== "~";
+  const shouldFetchTiAnomalies = dagId !== undefined && dagId !== "" && dagId !== "~";
   const { data: tiAnomalyPayload } = useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies(
     {
       dagId: shouldFetchTiAnomalies ? dagId : undefined,
       limit: 5000,
       offset: 0,
-      runId:
-        runId !== undefined && runId !== "" && runId !== "~" ? runId : undefined,
+      runId: runId !== undefined && runId !== "" && runId !== "~" ? runId : undefined,
     },
     undefined,
     {
