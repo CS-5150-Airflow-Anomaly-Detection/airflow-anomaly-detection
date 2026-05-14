@@ -23,7 +23,10 @@ import { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useLocalStorage } from "usehooks-ts";
 
-import { useStructureServiceStructureData, useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies } from "openapi/queries";
+import {
+  useStructureServiceStructureData,
+  useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies,
+} from "openapi/queries";
 import { DownloadButton } from "src/components/Graph/DownloadButton";
 import { edgeTypes, nodeTypes } from "src/components/Graph/graphTypes";
 import type { CustomNodeProps } from "src/components/Graph/reactflowUtils";
