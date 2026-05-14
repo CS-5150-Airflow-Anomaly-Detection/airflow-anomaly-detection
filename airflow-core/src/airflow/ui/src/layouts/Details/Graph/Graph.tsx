@@ -148,11 +148,15 @@ export const Graph = () => {
   );
 
   const isTaskAnomalous = (taskNodeId: string) => {
-    if (anomalousCellKeys.has(`${runId}::${taskNodeId}::-1`)) return true;
+    if (anomalousCellKeys.has(`${runId}::${taskNodeId}::-1`)) {
+      return true;
+    }
     const prefix = `${runId}::${taskNodeId}::`;
 
     for (const key of anomalousCellKeys) {
-      if (key.startsWith(prefix)) return true;
+      if (key.startsWith(prefix)) {
+        return true;
+      }
     }
 
     return false;
