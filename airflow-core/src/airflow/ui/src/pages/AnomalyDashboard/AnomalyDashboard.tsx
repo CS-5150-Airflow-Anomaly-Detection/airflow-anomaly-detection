@@ -40,10 +40,16 @@ const PLACEHOLDER_STATS = {
 
 const PLACEHOLDER_ANOMALIES: Array<AnomalyRecord> = [];
 
-export const AnomalyDashboard = () => {
+type Props = {
+  readonly anomalies?: Array<AnomalyRecord>;
+  readonly stats?: typeof PLACEHOLDER_STATS;
+};
+
+export const AnomalyDashboard = ({
+  anomalies = PLACEHOLDER_ANOMALIES,
+  stats = PLACEHOLDER_STATS,
+}: Props = {}) => {
   const { t: translate } = useTranslation(["common", "dashboard"]);
-  const stats = PLACEHOLDER_STATS;
-  const anomalies = PLACEHOLDER_ANOMALIES;
 
   return (
     <Box overflow="auto" px={{ base: 2, md: 4 }}>
