@@ -146,10 +146,10 @@ export const AssetLayout = () => {
                   w="full"
                   whiteSpace="pre"
                 >
-                  {JSON.stringify(asset.extra, null, 2)}
+                  {JSON.stringify(asset.extra, undefined, 2)}
                 </Code>
               </Box>
-            ) : null}
+            ) : undefined}
 
             <Box h="100%" overflow="auto" pt={2}>
               <AssetEvents

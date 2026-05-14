@@ -158,7 +158,7 @@ export const CreateAssetEventModal = ({ asset, onClose, open }: Props) => {
         requestBody: {
           asset_id: asset.id,
           extra: JSON.parse(extra) as Record<string, unknown>,
-          partition_key: partitionKey ?? null,
+          partition_key: partitionKey === undefined || partitionKey === "" ? undefined : partitionKey,
         },
       });
     }

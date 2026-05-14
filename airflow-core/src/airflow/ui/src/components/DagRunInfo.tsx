@@ -40,6 +40,8 @@ type Props = {
 const hasValue = (value: string | null | undefined): value is string =>
   value !== undefined && value !== null && value !== "";
 
+const hasAnomalyUrl = (url: string | undefined): url is string => url !== undefined && url !== "";
+
 const DagRunInfo = ({ anomalyUrl, endDate, isAnomalous, logicalDate, runAfter, startDate, state }: Props) => {
   const { t: translate } = useTranslation("common");
 
@@ -90,15 +92,15 @@ const DagRunInfo = ({ anomalyUrl, endDate, isAnomalous, logicalDate, runAfter, s
               flexShrink={0}
               lineHeight={0}
               onClick={
-                anomalyUrl
-                  ? (e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+                hasAnomalyUrl(anomalyUrl)
+                  ? (mouseEvent) => {
+                      mouseEvent.preventDefault();
+                      mouseEvent.stopPropagation();
                     }
                   : undefined
               }
             >
-              {anomalyUrl ? (
+              {hasAnomalyUrl(anomalyUrl) ? (
                 <RouterLink to={anomalyUrl}>
                   <FiAlertTriangle size={22} strokeWidth={2.75} />
                 </RouterLink>
