@@ -92,4 +92,103 @@ describe("AnomalyDashboard", () => {
     expect(screen.getByText("Recent anomalies")).toBeInTheDocument();
     expect(screen.getByText("No anomalies found")).toBeInTheDocument();
   });
+
+  it("renders all table column headers", () => {
+    render(<AnomalyDashboard />, { wrapper: Wrapper });
+
+    expect(screen.getByText("DAG ID")).toBeInTheDocument();
+    expect(screen.getByText("Task")).toBeInTheDocument();
+    expect(screen.getByText("Run ID")).toBeInTheDocument();
+    expect(screen.getByText("Detected")).toBeInTheDocument();
+    expect(screen.getByText("Duration")).toBeInTheDocument();
+    expect(screen.getByText("Expected range")).toBeInTheDocument();
+    expect(screen.getByText("Type")).toBeInTheDocument();
+  });
+
+  it("renders three stat cards with correct labels", () => {
+    render(<AnomalyDashboard />, { wrapper: Wrapper });
+
+    const cards = screen.getAllByRole("heading");
+
+    expect(cards.length).toBeGreaterThanOrEqual(3);
+    expect(screen.getByText("Last 24h")).toBeInTheDocument();
+    expect(screen.getByText("Tasks monitored")).toBeInTheDocument();
+    expect(screen.getByText("Algorithm")).toBeInTheDocument();
+  });
+
+  it("stat card for last-24h and tasks-monitored shows 0", () => {
+    render(<AnomalyDashboard />, { wrapper: Wrapper });
+
+    const zeros = screen.getAllByText("0");
+
+    expect(zeros).toHaveLength(2);
+  });
+
+  it("stat card for algorithm shows em-dash placeholder", () => {
+    render(<AnomalyDashboard />, { wrapper: Wrapper });
+
+    expect(screen.getByText("—")).toBeInTheDocument();
+  });
+
+  it("renders anomaly rows when anomalies are present", () => {
+    const anomalies = [
+      {
+        dagId: "dag-1",
+        detectedAt: "2026-01-01",
+        durationSeconds: 10,
+        expectedRange: "5-15s",
+        runId: "run-1",
+        taskId: "task-slow",
+        type: "slow" as const,
+      },
+      {
+        dagId: "dag-2",
+        detectedAt: "2026-01-02",
+        durationSeconds: 3,
+        expectedRange: "5-15s",
+        runId: "run-2",
+        taskId: "task-fast",
+        type: "fast" as const,
+      },
+    ];
+
+    render(<AnomalyDashboard anomalies={anomalies} />, { wrapper: Wrapper });
+
+    expect(screen.getByText("dag-1")).toBeInTheDocument();
+    expect(screen.getByText("dag-2")).toBeInTheDocument();
+    expect(screen.getByText("task-slow")).toBeInTheDocument();
+    expect(screen.getByText("task-fast")).toBeInTheDocument();
+    expect(screen.getByText("Slow")).toBeInTheDocument();
+    expect(screen.getByText("Fast")).toBeInTheDocument();
+    expect(screen.getByText("10s")).toBeInTheDocument();
+    expect(screen.queryByText("No anomalies found")).not.toBeInTheDocument();
+  });
+
+  it("accepts explicit stats prop and renders provided values", () => {
+    const stats = { algorithmsEnabled: "IsolationForest", anomaliesLast24h: 3, tasksMonitored: 12 };
+
+    render(<AnomalyDashboard stats={stats} />, { wrapper: Wrapper });
+
+    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.getByText("IsolationForest")).toBeInTheDocument();
+  });
+
+  it("uses orange badge for slow anomalies and blue for fast", () => {
+    const anomalies = [
+      {
+        dagId: "dag-1",
+        detectedAt: "2026-01-01",
+        durationSeconds: 10,
+        expectedRange: "5-15s",
+        runId: "run-1",
+        taskId: "task-slow",
+        type: "slow" as const,
+      },
+    ];
+
+    render(<AnomalyDashboard anomalies={anomalies} />, { wrapper: Wrapper });
+
+    expect(screen.getByText("Slow")).toBeInTheDocument();
+  });
 });

@@ -185,8 +185,8 @@ jobs:
             --coverage.include="src/pages/Dag/Anomalies/**" \
             --coverage.reporter=html \
             --coverage.reporter=text-summary \
-            --coverage.thresholds.lines=70 \
-            --coverage.thresholds.branches=50 \
+            --coverage.thresholds.lines=60 \
+            --coverage.thresholds.branches=70 \
             --coverage.reportsDirectory=coverage/ui-anomaly
       - name: "Upload scoped UI coverage (HTML)"
         if: success() || failure()

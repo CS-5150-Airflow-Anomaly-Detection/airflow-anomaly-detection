@@ -19,6 +19,7 @@
 import { VStack, Text, Box, HStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
 import { FiAlertTriangle } from "react-icons/fi";
+import { Link as RouterLink } from "react-router-dom";
 
 import type { DAGRunResponse } from "openapi/requests/types.gen";
 import { StateBadge } from "src/components/StateBadge";
@@ -27,6 +28,7 @@ import { Tooltip } from "src/components/ui";
 import { getRelativeTime } from "src/utils/datetimeUtils";
 
 type Props = {
+  readonly anomalyUrl?: string;
   readonly endDate?: string | null;
   readonly isAnomalous?: boolean;
   readonly logicalDate?: string | null;
@@ -38,7 +40,9 @@ type Props = {
 const hasValue = (value: string | null | undefined): value is string =>
   value !== undefined && value !== null && value !== "";
 
-const DagRunInfo = ({ endDate, isAnomalous, logicalDate, runAfter, startDate, state }: Props) => {
+const hasAnomalyUrl = (url: string | undefined): url is string => url !== undefined && url !== "";
+
+const DagRunInfo = ({ anomalyUrl, endDate, isAnomalous, logicalDate, runAfter, startDate, state }: Props) => {
   const { t: translate } = useTranslation("common");
 
   return (
@@ -87,8 +91,22 @@ const DagRunInfo = ({ endDate, isAnomalous, logicalDate, runAfter, startDate, st
               color="orange.600"
               flexShrink={0}
               lineHeight={0}
+              onClick={
+                hasAnomalyUrl(anomalyUrl)
+                  ? (mouseEvent) => {
+                      mouseEvent.preventDefault();
+                      mouseEvent.stopPropagation();
+                    }
+                  : undefined
+              }
             >
-              <FiAlertTriangle size={22} strokeWidth={2.75} />
+              {hasAnomalyUrl(anomalyUrl) ? (
+                <RouterLink to={anomalyUrl}>
+                  <FiAlertTriangle size={22} strokeWidth={2.75} />
+                </RouterLink>
+              ) : (
+                <FiAlertTriangle size={22} strokeWidth={2.75} />
+              )}
             </Box>
           ) : undefined}
         </HStack>
