@@ -16,25 +16,33 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { VStack, Text, Box } from "@chakra-ui/react";
+import { VStack, Text, Box, HStack } from "@chakra-ui/react";
 import { useTranslation } from "react-i18next";
+import { FiAlertTriangle } from "react-icons/fi";
+import { Link as RouterLink } from "react-router-dom";
 
 import type { DAGRunResponse } from "openapi/requests/types.gen";
 import { StateBadge } from "src/components/StateBadge";
 import Time from "src/components/Time";
 import { Tooltip } from "src/components/ui";
-import { getDuration } from "src/utils";
 import { getRelativeTime } from "src/utils/datetimeUtils";
 
 type Props = {
+  readonly anomalyUrl?: string;
   readonly endDate?: string | null;
+  readonly isAnomalous?: boolean;
   readonly logicalDate?: string | null;
   readonly runAfter: string;
   readonly startDate?: string | null;
   readonly state?: DAGRunResponse["state"];
 };
 
-const DagRunInfo = ({ endDate, logicalDate, runAfter, startDate, state }: Props) => {
+const hasValue = (value: string | null | undefined): value is string =>
+  value !== undefined && value !== null && value !== "";
+
+const hasAnomalyUrl = (url: string | undefined): url is string => url !== undefined && url !== "";
+
+const DagRunInfo = ({ anomalyUrl, endDate, isAnomalous, logicalDate, runAfter, startDate, state }: Props) => {
   const { t: translate } = useTranslation("common");
 
   return (
@@ -50,34 +58,58 @@ const DagRunInfo = ({ endDate, logicalDate, runAfter, startDate, state }: Props)
               <Text>
                 {translate("state")}: {translate(`common:states.${state}`)}
               </Text>
-              {Boolean(logicalDate) && (
+              {hasValue(logicalDate) ? (
                 <Text>
-                  {translate("logicalDate")}: <Time datetime={logicalDate} />
+                  {translate("logicalDate")}: <Time datetime={logicalDate} showTooltip={false} />
                 </Text>
-              )}
-              {Boolean(startDate) && (
+              ) : undefined}
+              {hasValue(startDate) ? (
                 <Text>
-                  {translate("startDate")}: <Time datetime={startDate} />
+                  {translate("startDate")}: <Time datetime={startDate} showTooltip={false} />
                 </Text>
-              )}
-              {Boolean(endDate) && (
+              ) : undefined}
+              {hasValue(endDate) ? (
                 <Text>
-                  {translate("endDate")}: <Time datetime={endDate} />
+                  {translate("endDate")}: <Time datetime={endDate} showTooltip={false} />
                 </Text>
-              )}
-              {Boolean(startDate) && (
-                <Text>
-                  {translate("duration")}: {getDuration(startDate, endDate)}
-                </Text>
-              )}
+              ) : undefined}
+              {isAnomalous ? (
+                <Text>{translate("anomalyDetected", "Performance anomaly detected")}</Text>
+              ) : undefined}
             </>
           )}
         </VStack>
       }
     >
       <Box>
-        <Time datetime={runAfter} mr={2} showTooltip={false} />
-        {state !== undefined && <StateBadge aria-label={state} data-testid="state-badge" state={state} />}
+        <HStack display="inline-flex" gap={1}>
+          <Time datetime={runAfter} mr={2} showTooltip={false} />
+          {state !== undefined && <StateBadge aria-label={state} data-testid="state-badge" state={state} />}
+          {state !== undefined && isAnomalous ? (
+            <Box
+              aria-label={translate("anomalyDetected", "Anomaly detected")}
+              color="orange.600"
+              flexShrink={0}
+              lineHeight={0}
+              onClick={
+                hasAnomalyUrl(anomalyUrl)
+                  ? (mouseEvent) => {
+                      mouseEvent.preventDefault();
+                      mouseEvent.stopPropagation();
+                    }
+                  : undefined
+              }
+            >
+              {hasAnomalyUrl(anomalyUrl) ? (
+                <RouterLink to={anomalyUrl}>
+                  <FiAlertTriangle size={22} strokeWidth={2.75} />
+                </RouterLink>
+              ) : (
+                <FiAlertTriangle size={22} strokeWidth={2.75} />
+              )}
+            </Box>
+          ) : undefined}
+        </HStack>
       </Box>
     </Tooltip>
   );

@@ -5096,6 +5096,119 @@ export const $TaskInletAssetReference = {
     description: 'Task inlet reference serializer for assets.'
 } as const;
 
+export const $TaskInstanceAnomalyCollectionResponse = {
+    properties: {
+        task_instance_anomalies: {
+            items: {
+                '$ref': '#/components/schemas/TaskInstanceAnomalyResponse'
+            },
+            type: 'array',
+            title: 'Task Instance Anomalies'
+        },
+        total_entries: {
+            type: 'integer',
+            title: 'Total Entries'
+        }
+    },
+    type: 'object',
+    required: ['task_instance_anomalies', 'total_entries'],
+    title: 'TaskInstanceAnomalyCollectionResponse',
+    description: 'Task Instance Anomaly Collection serializer for responses.'
+} as const;
+
+export const $TaskInstanceAnomalyResponse = {
+    properties: {
+        id: {
+            type: 'integer',
+            title: 'Id'
+        },
+        dag_id: {
+            type: 'string',
+            title: 'Dag Id'
+        },
+        run_id: {
+            type: 'string',
+            title: 'Run Id'
+        },
+        task_id: {
+            type: 'string',
+            title: 'Task Id'
+        },
+        map_index: {
+            type: 'integer',
+            title: 'Map Index'
+        },
+        try_number: {
+            type: 'integer',
+            title: 'Try Number'
+        },
+        is_anomalous: {
+            type: 'boolean',
+            title: 'Is Anomalous'
+        },
+        detector_name: {
+            type: 'string',
+            title: 'Detector Name'
+        },
+        reason: {
+            anyOf: [
+                {
+                    type: 'string'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Reason'
+        },
+        historic_runs_count: {
+            type: 'integer',
+            title: 'Historic Runs Count'
+        },
+        used_equal_map_index: {
+            type: 'boolean',
+            title: 'Used Equal Map Index'
+        },
+        duration: {
+            anyOf: [
+                {
+                    type: 'number'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Duration'
+        },
+        start_date: {
+            anyOf: [
+                {
+                    type: 'string',
+                    format: 'date-time'
+                },
+                {
+                    type: 'null'
+                }
+            ],
+            title: 'Start Date'
+        },
+        created_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Created At'
+        },
+        updated_at: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Updated At'
+        }
+    },
+    type: 'object',
+    required: ['id', 'dag_id', 'run_id', 'task_id', 'map_index', 'try_number', 'is_anomalous', 'detector_name', 'reason', 'historic_runs_count', 'used_equal_map_index', 'duration', 'start_date', 'created_at', 'updated_at'],
+    title: 'TaskInstanceAnomalyResponse',
+    description: 'Task Instance Anomaly serializer for responses.'
+} as const;
+
 export const $TaskInstanceCollectionResponse = {
     properties: {
         task_instances: {
@@ -7811,7 +7924,8 @@ export const $ExtraMenuItem = {
     },
     type: 'object',
     required: ['text', 'href'],
-    title: 'ExtraMenuItem'
+    title: 'ExtraMenuItem',
+    description: 'Define a menu item that can be added to the menu by auth managers or plugins.'
 } as const;
 
 export const $GanttResponse = {

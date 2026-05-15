@@ -1018,6 +1018,22 @@ class MaskSecret(BaseModel):
     type: Literal["MaskSecret"] = "MaskSecret"
 
 
+class RecordTaskAnomaly(BaseModel):
+    """Record an anomaly detection result for a completed task instance."""
+
+    dag_id: str
+    run_id: str
+    task_id: str
+    map_index: int
+    try_number: int
+    is_anomalous: bool
+    detector_name: str
+    reason: str | None = None
+    type: Literal["RecordTaskAnomaly"] = "RecordTaskAnomaly"
+    historic_runs_count: int = 0
+    used_equal_map_index: bool = True
+
+
 ToSupervisor = Annotated[
     DeferTask
     | DeleteXCom
@@ -1057,6 +1073,7 @@ ToSupervisor = Annotated[
     | CreateHITLDetailPayload
     | UpdateHITLDetail
     | GetHITLDetailResponse
-    | MaskSecret,
+    | MaskSecret
+    | RecordTaskAnomaly,
     Field(discriminator="type"),
 ]

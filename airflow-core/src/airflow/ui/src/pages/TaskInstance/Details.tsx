@@ -16,21 +16,25 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-import { Box, Flex, HStack, Table } from "@chakra-ui/react";
+import { Box, HStack, Table } from "@chakra-ui/react";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useSearchParams } from "react-router-dom";
 
 import {
+  useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies,
   useTaskInstanceServiceGetMappedTaskInstance,
   useTaskInstanceServiceGetTaskInstanceTryDetails,
 } from "openapi/queries";
 import { DagVersionDetails } from "src/components/DagVersionDetails";
 import { StateBadge } from "src/components/StateBadge";
+import { TaskInstanceAnomalyIndicator } from "src/components/TaskInstanceAnomalyIndicator";
 import { TaskTrySelect } from "src/components/TaskTrySelect";
 import Time from "src/components/Time";
 import { ClipboardRoot, ClipboardIconButton } from "src/components/ui";
 import { SearchParamsKeys } from "src/constants/searchParams";
 import { useAutoRefresh, isStatePending, renderDuration } from "src/utils";
+import { getTaskInstanceLink } from "src/utils/links";
 
 import { BlockingDeps } from "./BlockingDeps";
 import { ExtraLinks } from "./ExtraLinks";
@@ -70,6 +74,22 @@ export const Details = () => {
 
   const refetchInterval = useAutoRefresh({ dagId });
 
+  const shouldFetchAnomaly = Boolean(dagId && runId && taskId);
+  const { data: tiAnomalyPayload } = useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies(
+    {
+      dagId: shouldFetchAnomaly ? dagId : undefined,
+      limit: 200,
+      offset: 0,
+      runId: shouldFetchAnomaly ? runId : undefined,
+      taskId: shouldFetchAnomaly ? taskId : undefined,
+    },
+    undefined,
+    {
+      enabled: shouldFetchAnomaly,
+      refetchInterval: 5000,
+    },
+  );
+
   const { data: tryInstance } = useTaskInstanceServiceGetTaskInstanceTryDetails(
     {
       dagId,
@@ -83,6 +103,31 @@ export const Details = () => {
       refetchInterval: (query) => (isStatePending(query.state.data?.state) ? refetchInterval : false),
     },
   );
+
+  const anomalyForCurrentTry = useMemo(() => {
+    if (tryInstance === undefined || tiAnomalyPayload === undefined) {
+      return undefined;
+    }
+
+    return tiAnomalyPayload.task_instance_anomalies.find(
+      (anomalyRow) =>
+        anomalyRow.is_anomalous &&
+        anomalyRow.map_index === tryInstance.map_index &&
+        anomalyRow.try_number === tryInstance.try_number,
+    );
+  }, [tiAnomalyPayload, tryInstance]);
+
+  const taskInstanceLogsTo = useMemo(() => {
+    const path = getTaskInstanceLink({
+      dagId,
+      dagRunId: runId,
+      mapIndex: Number.isNaN(parsedMapIndex) ? -1 : parsedMapIndex,
+      taskId,
+    });
+    const query = searchParams.toString();
+
+    return query === "" ? path : `${path}?${query}`;
+  }, [dagId, parsedMapIndex, runId, searchParams, taskId]);
 
   return (
     <Box p={2}>
@@ -112,10 +157,13 @@ export const Details = () => {
           <Table.Row>
             <Table.Cell>{translate("state")}</Table.Cell>
             <Table.Cell>
-              <Flex gap={1}>
+              <HStack alignItems="center" flexWrap="wrap" gap={1}>
                 <StateBadge state={tryInstance?.state} />
                 {tryInstance?.state ?? translate("states.no_status")}
-              </Flex>
+                {Boolean(anomalyForCurrentTry?.is_anomalous) && (
+                  <TaskInstanceAnomalyIndicator logsTo={taskInstanceLogsTo} />
+                )}
+              </HStack>
             </Table.Cell>
           </Table.Row>
           <Table.Row>

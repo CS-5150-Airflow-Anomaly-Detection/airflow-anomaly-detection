@@ -1,0 +1,31 @@
+# Scoped coverage for anomaly backend modules (used only by `.github/workflows/ci-anomaly.yml`).
+#
+# This is intentionally kept in `.github/anomaly-ci/` so it's obvious, self-contained,
+# and easy to remove when merging this feature work upstream.
+#
+# Note: Breeze adds `--cov=airflow --cov-config=pyproject.toml` when `--enable-coverage` is set.
+# Passing this file as a second `--cov-config` makes pytest-cov use these [run] settings for this run.
+
+[run]
+branch = true
+relative_files = true
+
+# Keep behavior consistent with the repo-wide coverage defaults.
+omit = [
+    "airflow-core/src/airflow/_vendor/**",
+    "airflow-core/src/airflow/contrib/**",
+    "airflow-core/src/airflow/example_dags/**",
+    "airflow-core/src/airflow/migrations/**",
+    "providers/google/src/airflow/providers/**/example_dags/**",
+    "providers/google/src/airflow/providers/google/ads/_vendor/**",
+    # Breeze measures `--cov=airflow`, which can include Task SDK modules too.
+    # Explicitly omit SDK paths so backend coverage stays backend-only.
+    "*/airflow/sdk/**",
+]
+
+# Only trace anomaly-related backend modules.
+include = [
+    "*/airflow/models/task_instance_anomaly.py",
+    "*/airflow/api_fastapi/core_api/routes/public/task_instance_anomaly.py",
+    "*/airflow/api_fastapi/core_api/datamodels/task_instance_anomaly.py",
+]

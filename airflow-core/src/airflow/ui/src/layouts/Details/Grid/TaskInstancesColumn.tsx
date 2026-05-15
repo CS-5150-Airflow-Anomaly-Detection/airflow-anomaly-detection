@@ -28,7 +28,45 @@ import { useGridTiSummaries } from "src/queries/useGridTISummaries.ts";
 import { GridTI } from "./GridTI";
 import type { GridTask } from "./utils";
 
+const isTaskCellAnomalous = (keys: Set<string>, runId: string, taskId: string) => {
+  if (keys.has(`${runId}::${taskId}::-1`)) {
+    return true;
+  }
+  const prefix = `${runId}::${taskId}::`;
+
+  for (const key of keys) {
+    if (key.startsWith(prefix)) {
+      return true;
+    }
+  }
+
+  return false;
+};
+
+const getDetectorForCell = (
+  detectors: Map<string, string>,
+  runId: string,
+  taskId: string,
+): string | undefined => {
+  const exact = `${runId}::${taskId}::-1`;
+
+  if (detectors.has(exact)) {
+    return detectors.get(exact);
+  }
+  const prefix = `${runId}::${taskId}::`;
+
+  for (const [key, name] of detectors) {
+    if (key.startsWith(prefix)) {
+      return name;
+    }
+  }
+
+  return undefined;
+};
+
 type Props = {
+  readonly anomalousCellKeys: Set<string>;
+  readonly anomalousDetectorByCellKey: Map<string, string>;
   readonly nodes: Array<GridTask>;
   readonly onCellClick?: () => void;
   readonly run: GridRunsResponse;
@@ -37,7 +75,14 @@ type Props = {
 
 const ROW_HEIGHT = 20;
 
-export const TaskInstancesColumn = ({ nodes, onCellClick, run, virtualItems }: Props) => {
+export const TaskInstancesColumn = ({
+  anomalousCellKeys,
+  anomalousDetectorByCellKey,
+  nodes,
+  onCellClick,
+  run,
+  virtualItems,
+}: Props) => {
   const { dagId = "", runId } = useParams();
   const { data: gridTISummaries } = useGridTiSummaries({ dagId, runId: run.run_id, state: run.state });
   const { hoveredRunId, setHoveredRunId } = useHover();
@@ -90,6 +135,8 @@ export const TaskInstancesColumn = ({ nodes, onCellClick, run, virtualItems }: P
           );
         }
 
+        const cellAnomalous = isTaskCellAnomalous(anomalousCellKeys, run.run_id, node.id);
+
         return (
           <Box
             key={node.id}
@@ -99,8 +146,14 @@ export const TaskInstancesColumn = ({ nodes, onCellClick, run, virtualItems }: P
             transform={`translateY(${virtualItem.start}px)`}
           >
             <GridTI
+              anomalyDetectorName={
+                cellAnomalous
+                  ? getDetectorForCell(anomalousDetectorByCellKey, run.run_id, node.id)
+                  : undefined
+              }
               dagId={dagId}
               instance={taskInstance}
+              isAnomalous={cellAnomalous}
               isGroup={node.isGroup}
               isMapped={node.is_mapped}
               label={node.label}

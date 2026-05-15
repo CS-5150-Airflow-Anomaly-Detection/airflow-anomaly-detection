@@ -237,9 +237,23 @@
   },
   "task_one": "Task",
   "task_other": "Tasks",
+  "taskAnomalies": {
+    "anomalyAlgResult": "Anomaly Alg Result",
+    "anomalyAlgorithm": "Anomaly Algorithm",
+    "detectedCount": "{{count}} Task Anomalies Detected",
+    "historicEqualMapIndex": "Use Historic Runs w/ Equal Map Index",
+    "historicEqualMapIndexNo": "No",
+    "historicEqualMapIndexYes": "Yes",
+    "historicRunsUsed": "Historic Runs Used"
+  },
+  "taskAnomaly_one": "Task Anomaly",
+  "taskAnomaly_other": "Task Anomalies",
   "taskGroup": "Task Group",
   "taskId": "Task ID",
   "taskInstance": {
+    "anomalyBadge": "Anomaly",
+    "anomalyBadgeAria": "Anomaly",
+    "anomalyClickToSeeLogs": "Click to see logs",
     "dagVersion": "Dag Version",
     "executor": "Executor",
     "executorConfig": "Executor Config",

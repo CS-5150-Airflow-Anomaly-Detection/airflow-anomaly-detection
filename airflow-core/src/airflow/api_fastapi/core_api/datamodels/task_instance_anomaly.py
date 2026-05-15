@@ -1,0 +1,53 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+from __future__ import annotations
+
+from datetime import datetime
+
+from pydantic import ConfigDict
+
+from airflow.api_fastapi.core_api.base import BaseModel
+
+
+class TaskInstanceAnomalyResponse(BaseModel):
+    """Task Instance Anomaly serializer for responses."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    dag_id: str
+    run_id: str
+    task_id: str
+    map_index: int
+    try_number: int
+    is_anomalous: bool
+    detector_name: str
+    reason: str | None
+    historic_runs_count: int
+    used_equal_map_index: bool
+    duration: float | None
+    start_date: datetime | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class TaskInstanceAnomalyCollectionResponse(BaseModel):
+    """Task Instance Anomaly Collection serializer for responses."""
+
+    task_instance_anomalies: list[TaskInstanceAnomalyResponse]
+    total_entries: int

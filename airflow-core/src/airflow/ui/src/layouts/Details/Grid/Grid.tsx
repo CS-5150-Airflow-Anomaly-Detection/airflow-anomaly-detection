@@ -25,6 +25,7 @@ import { useTranslation } from "react-i18next";
 import { FiChevronsRight } from "react-icons/fi";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
+import { useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies } from "openapi/queries";
 import type { DagRunState, DagRunType, GridRunsResponse } from "openapi/requests";
 import { useOpenGroups } from "src/context/openGroups";
 import { NavigationModes, useNavigation } from "src/hooks/navigation";
@@ -96,6 +97,36 @@ export const Grid = ({ dagRunState, limit, runType, showGantt, triggeringUser }:
     runType,
     triggeringUser,
   });
+
+  const { data: tiAnomalyData } = useTaskInstanceAnomalyServiceGetTaskInstanceAnomalies(
+    {
+      dagId: dagId || undefined,
+      limit: 2000,
+      offset: 0,
+    },
+    undefined,
+    {
+      enabled: Boolean(dagId),
+      refetchInterval: 5000,
+      refetchOnWindowFocus: true,
+    },
+  );
+  const anomalousRows = (tiAnomalyData?.task_instance_anomalies ?? []).filter(
+    (anomalousRow) => anomalousRow.dag_id === dagId && anomalousRow.is_anomalous,
+  );
+  const anomalousCellKeys = new Set(
+    anomalousRows.map(
+      (anomalousRow) => `${anomalousRow.run_id}::${anomalousRow.task_id}::${anomalousRow.map_index}`,
+    ),
+  );
+  const anomalousDetectorByCellKey = new Map<string, string>();
+
+  for (const anomalousRow of anomalousRows) {
+    anomalousDetectorByCellKey.set(
+      `${anomalousRow.run_id}::${anomalousRow.task_id}::${anomalousRow.map_index}`,
+      anomalousRow.detector_name,
+    );
+  }
 
   // calculate dag run bar heights relative to max
   const max = Math.max.apply(
@@ -198,6 +229,8 @@ export const Grid = ({ dagRunState, limit, runType, showGantt, triggeringUser }:
           <Flex flexDirection="row-reverse" flexShrink={0}>
             {gridRuns?.map((dr: GridRunsResponse) => (
               <TaskInstancesColumn
+                anomalousCellKeys={anomalousCellKeys}
+                anomalousDetectorByCellKey={anomalousDetectorByCellKey}
                 key={dr.run_id}
                 nodes={flatNodes}
                 onCellClick={handleCellClick}

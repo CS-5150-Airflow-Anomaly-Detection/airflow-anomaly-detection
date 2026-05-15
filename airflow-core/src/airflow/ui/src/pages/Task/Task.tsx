@@ -18,7 +18,7 @@
  */
 import { ReactFlowProvider } from "@xyflow/react";
 import { useTranslation } from "react-i18next";
-import { FiUser } from "react-icons/fi";
+import { FiAlertTriangle, FiUser } from "react-icons/fi";
 import { LuChartColumn } from "react-icons/lu";
 import { MdOutlineEventNote, MdOutlineTask } from "react-icons/md";
 import { useParams } from "react-router-dom";
@@ -43,6 +43,7 @@ export const Task = () => {
   const tabs = [
     { icon: <LuChartColumn />, label: translate("tabs.overview"), value: "" },
     { icon: <MdOutlineTask />, label: translate("tabs.taskInstances"), value: "task_instances" },
+    { icon: <FiAlertTriangle />, label: translate("tabs.taskAnomalies"), value: "task_anomalies" },
     { icon: <FiUser />, label: translate("tabs.requiredActions"), value: "required_actions" },
     { icon: <MdOutlineEventNote />, label: translate("tabs.auditLog"), value: "events" },
     ...externalTabs,

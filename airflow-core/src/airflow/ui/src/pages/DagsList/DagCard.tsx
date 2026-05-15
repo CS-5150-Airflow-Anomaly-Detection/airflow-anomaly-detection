@@ -37,9 +37,16 @@ import { Schedule } from "./Schedule";
 
 type Props = {
   readonly dag: DAGWithLatestDagRunsResponse;
+  /** `dag_id::run_id` for runs that have at least one anomalous task (from task-instance anomalies). */
+  readonly dagRunKeysWithAnomalousTasks?: Set<string>;
 };
 
-export const DagCard = ({ dag }: Props) => {
+const EMPTY_DAG_RUN_KEYS_WITH_ANOMALOUS_TASKS = new Set<string>();
+
+export const DagCard = ({
+  dag,
+  dagRunKeysWithAnomalousTasks = EMPTY_DAG_RUN_KEYS_WITH_ANOMALOUS_TASKS,
+}: Props) => {
   const { t: translate } = useTranslation(["common", "dag"]);
   const [latestRun] = dag.latest_dag_runs;
 
@@ -85,7 +92,9 @@ export const DagCard = ({ dag }: Props) => {
             <Link asChild color="fg.info">
               <RouterLink to={`/dags/${latestRun.dag_id}/runs/${latestRun.run_id}`}>
                 <DagRunInfo
+                  anomalyUrl={`/dags/${dag.dag_id}/anomalies`}
                   endDate={latestRun.end_date}
+                  isAnomalous={dagRunKeysWithAnomalousTasks.has(`${dag.dag_id}::${latestRun.run_id}`)}
                   logicalDate={latestRun.logical_date}
                   runAfter={latestRun.run_after}
                   startDate={latestRun.start_date}

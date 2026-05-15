@@ -1,7 +1,7 @@
 // generated with @7nohe/openapi-react-query-codegen@1.6.2 
 
 import { UseQueryResult } from "@tanstack/react-query";
-import { AssetService, AuthLinksService, BackfillService, CalendarService, ConfigService, ConnectionService, DagParsingService, DagRunService, DagService, DagSourceService, DagStatsService, DagVersionService, DagWarningService, DashboardService, DependenciesService, EventLogService, ExperimentalService, ExtraLinksService, GanttService, GridService, ImportErrorService, JobService, LoginService, MonitorService, PluginService, PoolService, ProviderService, StructureService, TaskInstanceService, TaskService, TeamsService, VariableService, VersionService, XcomService } from "../requests/services.gen";
+import { AssetService, AuthLinksService, BackfillService, CalendarService, ConfigService, ConnectionService, DagParsingService, DagRunService, DagService, DagSourceService, DagStatsService, DagVersionService, DagWarningService, DashboardService, DependenciesService, EventLogService, ExperimentalService, ExtraLinksService, GanttService, GridService, ImportErrorService, JobService, LoginService, MonitorService, PluginService, PoolService, ProviderService, StructureService, TaskInstanceAnomalyService, TaskInstanceService, TaskService, TeamsService, VariableService, VersionService, XcomService } from "../requests/services.gen";
 import { DagRunState, DagWarningType } from "../requests/types.gen";
 export type AssetServiceGetAssetsDefaultResponse = Awaited<ReturnType<typeof AssetService.getAssets>>;
 export type AssetServiceGetAssetsQueryResult<TData = AssetServiceGetAssetsDefaultResponse, TError = unknown> = UseQueryResult<TData, TError>;
@@ -762,6 +762,16 @@ export const UseDagVersionServiceGetDagVersionsKeyFn = ({ bundleName, bundleVers
   orderBy?: string[];
   versionNumber?: number;
 }, queryKey?: Array<unknown>) => [useDagVersionServiceGetDagVersionsKey, ...(queryKey ?? [{ bundleName, bundleVersion, dagId, limit, offset, orderBy, versionNumber }])];
+export type TaskInstanceAnomalyServiceGetTaskInstanceAnomaliesDefaultResponse = Awaited<ReturnType<typeof TaskInstanceAnomalyService.getTaskInstanceAnomalies>>;
+export type TaskInstanceAnomalyServiceGetTaskInstanceAnomaliesQueryResult<TData = TaskInstanceAnomalyServiceGetTaskInstanceAnomaliesDefaultResponse, TError = unknown> = UseQueryResult<TData, TError>;
+export const useTaskInstanceAnomalyServiceGetTaskInstanceAnomaliesKey = "TaskInstanceAnomalyServiceGetTaskInstanceAnomalies";
+export const UseTaskInstanceAnomalyServiceGetTaskInstanceAnomaliesKeyFn = ({ dagId, limit, offset, runId, taskId }: {
+  dagId?: string;
+  limit?: number;
+  offset?: number;
+  runId?: string;
+  taskId?: string;
+} = {}, queryKey?: Array<unknown>) => [useTaskInstanceAnomalyServiceGetTaskInstanceAnomaliesKey, ...(queryKey ?? [{ dagId, limit, offset, runId, taskId }])];
 export type MonitorServiceGetHealthDefaultResponse = Awaited<ReturnType<typeof MonitorService.getHealth>>;
 export type MonitorServiceGetHealthQueryResult<TData = MonitorServiceGetHealthDefaultResponse, TError = unknown> = UseQueryResult<TData, TError>;
 export const useMonitorServiceGetHealthKey = "MonitorServiceGetHealth";

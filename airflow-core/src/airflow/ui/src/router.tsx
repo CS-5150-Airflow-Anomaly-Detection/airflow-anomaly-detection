@@ -28,6 +28,7 @@ import { AssetsList } from "src/pages/AssetsList";
 import { Configs } from "src/pages/Configs";
 import { Connections } from "src/pages/Connections";
 import { Dag } from "src/pages/Dag";
+import { Anomalies } from "src/pages/Dag/Anomalies";
 import { Backfills } from "src/pages/Dag/Backfills";
 import { Calendar } from "src/pages/Dag/Calendar/Calendar";
 import { Code } from "src/pages/Dag/Code";
@@ -51,8 +52,7 @@ import { Run } from "src/pages/Run";
 import { AssetEvents as DagRunAssetEvents } from "src/pages/Run/AssetEvents";
 import { Details as DagRunDetails } from "src/pages/Run/Details";
 import { Security } from "src/pages/Security";
-import { Task } from "src/pages/Task";
-import { Overview as TaskOverview } from "src/pages/Task/Overview";
+import { Task, TaskAnomalies, Overview as TaskOverview } from "src/pages/Task";
 import { TaskInstance, Logs } from "src/pages/TaskInstance";
 import { AssetEvents as TaskInstanceAssetEvents } from "src/pages/TaskInstance/AssetEvents";
 import { Details as TaskInstanceDetails } from "src/pages/TaskInstance/Details";
@@ -167,6 +167,7 @@ export const routerConfig = [
           { element: <Overview />, index: true },
           { element: <DagRuns />, path: "runs" },
           { element: <Tasks />, path: "tasks" },
+          { element: <Anomalies />, path: "anomalies" },
           { element: <Calendar />, path: "calendar" },
           { element: <HITLTaskInstances />, path: "required_actions" },
           { element: <Backfills />, path: "backfills" },
@@ -210,6 +211,7 @@ export const routerConfig = [
         children: [
           { element: <TaskOverview />, index: true },
           { element: <TaskInstances />, path: "task_instances" },
+          { element: <TaskAnomalies />, path: "task_anomalies" },
           { element: <HITLTaskInstances />, path: "required_actions" },
           pluginRoute,
         ],
@@ -225,6 +227,7 @@ export const routerConfig = [
         children: [
           { element: <TaskOverview />, index: true },
           { element: <TaskInstances />, path: "task_instances" },
+          { element: <TaskAnomalies />, path: "task_anomalies" },
           { element: <HITLTaskInstances />, path: "required_actions" },
           { element: <Events />, path: "events" },
           pluginRoute,
