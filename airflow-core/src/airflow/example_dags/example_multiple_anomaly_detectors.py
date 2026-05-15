@@ -42,7 +42,7 @@ from airflow.sdk import (
 
 
 class EvenRunCountAnomaly:
-    """Flag a task instance when the detector receives an even number of runtimes."""
+    """Flag a task instance when the anomaly detector receives an even number of runtimes."""
 
     def __call__(self, runtimes: list[float]) -> AnomalyResult:
         run_count = len(runtimes)
